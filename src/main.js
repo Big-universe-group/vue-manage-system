@@ -41,7 +41,7 @@ const i18n = new VueI18n({
  *    next: 一个回调函数
  */
 router.beforeEach((to, from, next) => {
-  document.title = `${to.meta.title} | vue-manage-system`;
+  document.title = `${to.meta.title} | bamboo`;
 
   const role = localStorage.getItem("ms_username");
   if (!role && to.path !== "/login") {
