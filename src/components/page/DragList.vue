@@ -126,8 +126,9 @@ export default {
     removeHandle(event) {
       // 将新的数据类型更改
       var [newToId, newIndex] = [event.to.id, event.newIndex];
-      this.draginfo[newToId][newIndex].dragType = this.getTypeByCategory(newToId);
-      this.$message.success(`从 ${event.from.id} 移动到 ${event.to.id} `);
+      var item = this.draginfo[newToId][newIndex];
+      item.dragType = this.getTypeByCategory(newToId);
+      this.$message.success(`ID()从 ${event.from.id} 移动到 ${event.to.id} `);
     },
     /*
     根据category获取类型
