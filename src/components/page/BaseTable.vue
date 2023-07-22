@@ -14,7 +14,12 @@
     <div class="container">
       <!-- a. 动作和搜索栏: el-button, el-select, el-input, el-button -->
       <div class="handle-box">
-        <el-button type="primary" icon="el-icon-delete" class="handle-del mr10" @click="delAllSelection">
+        <el-button
+          type="primary"
+          icon="el-icon-delete"
+          class="handle-del mr10"
+          @click="delAllSelection"
+          :disabled="checkAtLeastOneSelected">
           批量删除
         </el-button>
         <el-select v-model="query.address" placeholder="地址" class="handle-select mr10">
@@ -138,7 +143,6 @@ export default {
     // 获取 easy-mock 的模拟数据
     getData() {
       fetchData(this.query).then((res) => {
-        console.log(res);
         this.tableData = res.list;
         this.pageTotal = res.pageTotal || 50;
       });
@@ -156,16 +160,29 @@ export default {
       })
         .then(() => {
           this.$message.success("删除成功");
-          this.tableData.splice(index, 1);
+          var item = this.tableData.splice(index, 1);
+          if (item) {
+            // 将选项框中的匹配元素也剔除
+            this.multipleSelection = this.multipleSelection.filter((obj) => obj.id !== item.id);
+          }
         })
         .catch(() => {});
     },
-    // 多选操作
-    handleSelectionChange(val) {
-      this.multipleSelection = val;
+    /*
+      勾选操作, 其有如下几个情况:
+      + 勾选单个, 该选项之前未选中, 此时vals传入包含当前已勾选元素(可能多个)的数组
+      + 勾选单个, 该选项之前已选中, 此时vals传入除当前项之外已勾选元素的数组
+      + 勾选批量按钮, 类似上面的逻辑
+    */
+    handleSelectionChange(vals) {
+      this.multipleSelection = vals;
     },
     delAllSelection() {
       const length = this.multipleSelection.length;
+      if (length === 0) {
+        this.$message.error("未选中任何项, 无法进行批量删除操作, 请检查");
+        return;
+      }
       let str = "";
       this.delList = this.delList.concat(this.multipleSelection);
       for (let i = 0; i < length; i++) {
@@ -190,6 +207,12 @@ export default {
     handlePageChange(val) {
       this.$set(this.query, "pageIndex", val);
       this.getData();
+    },
+  },
+  computed: {
+    // 判断是否至少选中了一项, 若未选中任何项则不可进行批量删除操作
+    checkAtLeastOneSelected() {
+      return this.multipleSelection.length === 0;
     },
   },
 };

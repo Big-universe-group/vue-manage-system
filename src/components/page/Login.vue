@@ -72,10 +72,18 @@ export default {
 }
 .ms-login {
   position: absolute;
-  left: 50%;
   top: 50%;
   width: 350px;
+  /*
+     居中
+  left: 50%;
   margin: -190px 0 0 -175px;
+  */
+
+  /* 靠右边 */
+  right: 0%;
+  margin: -190px 20px 0 0;
+
   border-radius: 5px;
   background: rgba(255, 255, 255, 0.3);
   overflow: hidden;
