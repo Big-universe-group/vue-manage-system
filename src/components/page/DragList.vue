@@ -152,6 +152,7 @@ export default {
 /* 三个div: drag-box-item平行布局 */
 .drag-box {
   display: flex;
+  justify-content: space-evenly; /* 元素在容器内平均分布，并且每个元素周围以及两侧都有一样的空白间隔 */
   user-select: none;
 }
 .drag-box-item {
