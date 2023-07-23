@@ -20,18 +20,30 @@
             <span>东莞</span>
           </div>
         </el-card>
-        <el-card shadow="hover" style="height: 252px">
+        <!--
+          el-card是一个卡片组件，用于包裹内容，并提供阴影效果
+          el-progress是一个进度条组件，用于展示语言的统计百分比
+
+          其中, 各个功能模块说明如下:
+            + shadow="hover"属性表示当鼠标悬停在卡片上时显示阴影效果
+            + slot自定义el-card的头部，头部显示了"语言详情"文本
+
+          插槽说明: 在使用el-card组件时，我们可以在标签内部插入带有slot="header"
+            属性的元素或组件，并且它们将会被渲染到这个插槽的位置。
+          注意, el-card本身就要求这样使用slot, 组件内部会自动将这段slot代码作为header.
+        -->
+        <el-card shadow="hover" style="height: 252px" v-if="statisticsInfo.languages">
           <div slot="header" class="clearfix">
             <span>语言详情</span>
           </div>
           Vue
-          <el-progress :percentage="71.3" color="#42b983"></el-progress>
+          <el-progress :percentage="statisticsInfo.languages.vue || 0" color="#42b983"></el-progress>
           JavaScript
-          <el-progress :percentage="24.1" color="#f1e05a"></el-progress>
+          <el-progress :percentage="statisticsInfo.languages.javascript || 0" color="#f1e05a"></el-progress>
           CSS
-          <el-progress :percentage="13.7"></el-progress>
+          <el-progress :percentage="statisticsInfo.languages.css || 0"></el-progress>
           HTML
-          <el-progress :percentage="5.9" color="#f56c6c"></el-progress>
+          <el-progress :percentage="statisticsInfo.languages.html || 0" color="#f56c6c"></el-progress>
         </el-card>
       </el-col>
       <el-col :span="16">
@@ -96,15 +108,30 @@
         </el-card>
       </el-col>
     </el-row>
+
     <el-row :gutter="20">
+      <!-- a. 柱状图 -->
       <el-col :span="12">
         <el-card shadow="hover">
           <schart ref="bar" class="schart" canvasId="bar" :options="salesData.options"></schart>
         </el-card>
       </el-col>
+      <!-- 折线图 -->
       <el-col :span="12">
         <el-card shadow="hover">
           <schart ref="line" class="schart" canvasId="line" :options="salesData.options2"></schart>
+        </el-card>
+      </el-col>
+      <!-- 饼状图, 注意, 数据本身就有一定的格式要求 -->
+      <el-col :span="12">
+        <el-card shadow="hover">
+          <schart ref="pie" class="schart" canvasId="pie" :options="salesData.options3"></schart>
+        </el-card>
+      </el-col>
+      <!-- 环形图 -->
+      <el-col :span="12">
+        <el-card shadow="hover">
+          <schart ref="ring" class="schart" canvasId="ring" :options="salesData.options4"></schart>
         </el-card>
       </el-col>
     </el-row>
@@ -125,38 +152,10 @@ export default {
     return {
       name: localStorage.getItem("ms_username"),
       todoList: [],
-      data: [
-        {
-          name: "2018/09/04",
-          value: 1083,
-        },
-        {
-          name: "2018/09/05",
-          value: 941,
-        },
-        {
-          name: "2018/09/06",
-          value: 1139,
-        },
-        {
-          name: "2018/09/07",
-          value: 816,
-        },
-        {
-          name: "2018/09/08",
-          value: 327,
-        },
-        {
-          name: "2018/09/09",
-          value: 228,
-        },
-        {
-          name: "2018/09/10",
-          value: 1065,
-        },
-      ],
       salesData: { options: {}, options2: {} }, // 销售信息
-      statisticsInfo: {}, // 统计信息
+      statisticsInfo: {
+        // 统计信息, 确保子对象不为空, 否则开始就会报错
+      },
     };
   },
   components: {
@@ -167,45 +166,40 @@ export default {
       return this.name === "admin" ? "超级管理员" : "普通用户";
     },
   },
-  // 组件挂载
-  mounted() {
-    this.getTodoListInfos();
-    this.getRecentSalesData();
-    this.getStatisticsInfo();
+  // 实例创建完成后被立即调用, 此时还没开始，$el 属性目前不可见
+  created() {
+    this.getAllInfo();
   },
-  // created() {
-  //     this.handleListener();
-  //     this.changeDate();
-  // },
-  // activated() {
-  //     this.handleListener();
-  // },
-  // deactivated() {
-  //     window.removeEventListener('resize', this.renderChart);
-  //     bus.$off('collapse', this.handleBus);
-  // },
+  // 当点击"系统首页", 加载dashboard页面的时候, 该函数被调用
+  activated() {
+    this.getAllInfo();
+
+    this.refreshInterval = setInterval(() => {
+      this.getAllInfo();
+    }, 5000);
+  },
+  // 当离开dashboard页面的时候被调用
+  deactivated() {
+    clearInterval(this.refreshInterval);
+  },
   methods: {
-    changeDate() {
-      const now = new Date().getTime();
-      this.data.forEach((item, index) => {
-        const date = new Date(now - (6 - index) * 86400000);
-        item.name = `${date.getFullYear()}/${date.getMonth() + 1}/${date.getDate()}`;
-      });
+    // 注意, 在请求期间, 数据仍然是初始状态, 所以html中需要兼容
+    getAllInfo() {
+      this.getTodoListInfos();
+      this.getRecentSalesData();
+      this.getStatisticsInfo();
     },
-    // handleListener() {
-    //     bus.$on('collapse', this.handleBus);
-    //     // 调用renderChart方法对图表进行重新渲染
-    //     window.addEventListener('resize', this.renderChart);
-    // },
-    // handleBus(msg) {
-    //     setTimeout(() => {
-    //         this.renderChart();
-    //     }, 200);
-    // },
-    // renderChart() {
-    //     this.$refs.bar.renderChart();
-    //     this.$refs.line.renderChart();
-    // }
+    // 自定义事件的方法。当"collapse"事件被触发时调用: 重新渲染图表
+    handleBus(msg) {
+      setTimeout(() => {
+        this.renderChart();
+      }, 200);
+    },
+    // 用于渲染图表的方法: 重新渲染柱状图, 重新渲染折线图
+    renderChart() {
+      this.$refs.bar.renderChart();
+      this.$refs.line.renderChart();
+    },
 
     // 获取todolist
     getTodoListInfos() {

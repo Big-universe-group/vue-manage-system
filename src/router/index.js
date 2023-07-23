@@ -25,9 +25,9 @@ export default new Router({
           meta: { title: "自定义图标" },
         },
         {
-          path: "/table",
-          component: () => import(/* webpackChunkName: "table" */ "../components/page/BaseTable.vue"),
-          meta: { title: "基础表格" },
+          path: "/userinfos",
+          component: () => import(/* webpackChunkName: "userinfos" */ "../components/page/BaseTable.vue"),
+          meta: { title: "用户列表" },
         },
         {
           path: "/tabs",
@@ -56,12 +56,6 @@ export default new Router({
           path: "/upload",
           component: () => import(/* webpackChunkName: "upload" */ "../components/page/Upload.vue"),
           meta: { title: "文件上传" },
-        },
-        {
-          // vue-schart组件
-          path: "/charts",
-          component: () => import(/* webpackChunkName: "chart" */ "../components/page/BaseCharts.vue"),
-          meta: { title: "schart图表" },
         },
         {
           // 拖拽列表组件

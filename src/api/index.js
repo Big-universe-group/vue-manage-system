@@ -1,13 +1,23 @@
 import axiosapi from "../utils/request";
-import CommonDateHandler from "../utils/date";
 
 const SimpleApi = {
   /*
-   * 功能: 获取个人信息
+   * 功能: 获取个人信息列表
    */
   fetchPersonInfos(params) {
     return axiosapi({
-      url: "./table.json",
+      url: "./userinfos.json",
+      method: "get",
+      params: params,
+    });
+  },
+
+  /*
+   * 功能: 获取当前登录用户详细信息
+   */
+  fetchSelfDetailInfo(params) {
+    return axiosapi({
+      url: "./userself.json",
       method: "get",
       params: params,
     });
