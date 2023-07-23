@@ -115,7 +115,7 @@
 </template>
 
 <script>
-import { fetchData } from "../../api/index";
+import SimpleApi from "../../api/index";
 export default {
   name: "basetable",
   data() {
@@ -142,7 +142,7 @@ export default {
   methods: {
     // 获取 easy-mock 的模拟数据
     getData() {
-      fetchData(this.query).then((res) => {
+      SimpleApi.fetchPersonInfos(this.query).then((res) => {
         this.tableData = res.list;
         this.pageTotal = res.pageTotal || 50;
       });

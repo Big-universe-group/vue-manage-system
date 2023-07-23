@@ -41,7 +41,7 @@
               <div class="grid-content grid-con-1">
                 <i class="el-icon-lx-people grid-con-icon"></i>
                 <div class="grid-cont-right">
-                  <div class="grid-num">1234</div>
+                  <div class="grid-num">{{ statisticsInfo.accessNum }}</div>
                   <div>用户访问量</div>
                 </div>
               </div>
@@ -52,7 +52,7 @@
               <div class="grid-content grid-con-2">
                 <i class="el-icon-lx-notice grid-con-icon"></i>
                 <div class="grid-cont-right">
-                  <div class="grid-num">321</div>
+                  <div class="grid-num">{{ statisticsInfo.msgNum }}</div>
                   <div>系统消息</div>
                 </div>
               </div>
@@ -63,8 +63,8 @@
               <div class="grid-content grid-con-3">
                 <i class="el-icon-lx-goods grid-con-icon"></i>
                 <div class="grid-cont-right">
-                  <div class="grid-num">5000</div>
-                  <div>数量</div>
+                  <div class="grid-num">{{ statisticsInfo.orderNum }}</div>
+                  <div>订单数</div>
                 </div>
               </div>
             </el-card>
@@ -99,12 +99,12 @@
     <el-row :gutter="20">
       <el-col :span="12">
         <el-card shadow="hover">
-          <schart ref="bar" class="schart" canvasId="bar" :options="options"></schart>
+          <schart ref="bar" class="schart" canvasId="bar" :options="salesData.options"></schart>
         </el-card>
       </el-col>
       <el-col :span="12">
         <el-card shadow="hover">
-          <schart ref="line" class="schart" canvasId="line" :options="options2"></schart>
+          <schart ref="line" class="schart" canvasId="line" :options="salesData.options2"></schart>
         </el-card>
       </el-col>
     </el-row>
@@ -112,6 +112,8 @@
 </template>
 
 <script>
+import SimpleApi from "../../api/index";
+import CommonDateHandler from "../../utils/date";
 import Schart from "vue-schart";
 import bus from "../common/bus";
 /*
@@ -122,32 +124,7 @@ export default {
   data() {
     return {
       name: localStorage.getItem("ms_username"),
-      todoList: [
-        {
-          title: "今天要修复100个bug",
-          status: false,
-        },
-        {
-          title: "今天要修复100个bug",
-          status: false,
-        },
-        {
-          title: "今天要写100行代码加几个bug吧",
-          status: false,
-        },
-        {
-          title: "今天要修复100个bug",
-          status: false,
-        },
-        {
-          title: "今天要修复100个bug",
-          status: true,
-        },
-        {
-          title: "今天要写100行代码加几个bug吧",
-          status: true,
-        },
-      ],
+      todoList: [],
       data: [
         {
           name: "2018/09/04",
@@ -178,49 +155,8 @@ export default {
           value: 1065,
         },
       ],
-      options: {
-        type: "bar",
-        title: {
-          text: "最近一周各品类销售图",
-        },
-        xRorate: 25,
-        labels: ["周一", "周二", "周三", "周四", "周五"],
-        datasets: [
-          {
-            label: "家电",
-            data: [234, 278, 270, 190, 230],
-          },
-          {
-            label: "百货",
-            data: [164, 178, 190, 135, 160],
-          },
-          {
-            label: "食品",
-            data: [144, 198, 150, 235, 120],
-          },
-        ],
-      },
-      options2: {
-        type: "line",
-        title: {
-          text: "最近几个月各品类销售趋势图",
-        },
-        labels: ["6月", "7月", "8月", "9月", "10月"],
-        datasets: [
-          {
-            label: "家电",
-            data: [234, 278, 270, 190, 230],
-          },
-          {
-            label: "百货",
-            data: [164, 178, 150, 135, 160],
-          },
-          {
-            label: "食品",
-            data: [74, 118, 200, 235, 90],
-          },
-        ],
-      },
+      salesData: { options: {}, options2: {} }, // 销售信息
+      statisticsInfo: {}, // 统计信息
     };
   },
   components: {
@@ -230,6 +166,12 @@ export default {
     role() {
       return this.name === "admin" ? "超级管理员" : "普通用户";
     },
+  },
+  // 组件挂载
+  mounted() {
+    this.getTodoListInfos();
+    this.getRecentSalesData();
+    this.getStatisticsInfo();
   },
   // created() {
   //     this.handleListener();
@@ -264,6 +206,48 @@ export default {
     //     this.$refs.bar.renderChart();
     //     this.$refs.line.renderChart();
     // }
+
+    // 获取todolist
+    getTodoListInfos() {
+      SimpleApi.fetchTodoListInfos()
+        .then((result) => {
+          this.todoList = result;
+        })
+        .catch((error) => {
+          console.log(error);
+        });
+    },
+
+    // 获取最近一周各品类销售数据
+    getRecentSalesData() {
+      // 获取最近一周的日期范围，可以使用 JavaScript Date 对象进行计算
+      const today = new Date();
+      const oneWeekAgo = new Date(today.getTime() - 7 * 24 * 60 * 60 * 1000);
+
+      // 格式化日期范围为字符串，如果需要传给 API 的话
+      const startDate = CommonDateHandler.formatDate(oneWeekAgo);
+      const endDate = CommonDateHandler.formatDate(today);
+
+      // 调用 API 方法获取最近一周的销售数据
+      SimpleApi.fetchSalesData({ startDate, endDate })
+        .then((result) => {
+          this.salesData = result;
+        })
+        .catch((error) => {
+          console.log(error);
+        });
+    },
+
+    // 获取网站的统计信息
+    getStatisticsInfo() {
+      SimpleApi.fetchStatisticsData()
+        .then((result) => {
+          this.statisticsInfo = result;
+        })
+        .catch((error) => {
+          console.log(error);
+        });
+    },
   },
 };
 </script>
