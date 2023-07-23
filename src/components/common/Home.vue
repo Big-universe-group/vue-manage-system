@@ -2,7 +2,7 @@
   <div class="wrapper">
     <v-head></v-head>
     <v-sidebar></v-sidebar>
-    <!-- content-collpse见通用样式:  main.css -->
+    <!-- content-box和content-collpse见通用样式:  main.css -->
     <div class="content-box" :class="{ 'content-collapse': collapse }">
       <v-tags></v-tags>
       <div class="content">

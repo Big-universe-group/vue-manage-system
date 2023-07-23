@@ -5,7 +5,7 @@
       <i v-if="!collapse" class="el-icon-s-fold"></i>
       <i v-else class="el-icon-s-unfold"></i>
     </div>
-    <div class="logo">后台管理系统</div>
+    <div class="logo">管理-后台</div>
 
     <div class="header-right">
       <div class="header-user-con">
@@ -59,7 +59,7 @@ import bus from "../common/bus";
 export default {
   data() {
     return {
-      collapse: false,
+      collapse: true, // 默认打开侧边栏
       fullscreen: false,
       name: "linxin",
       message: 2,
@@ -126,6 +126,7 @@ export default {
   position: relative;
   box-sizing: border-box;
   width: 100%;
+  /* 导航栏高度固定为70px */
   height: 70px;
   font-size: 22px;
   color: #fff;

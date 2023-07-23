@@ -172,6 +172,7 @@ export default {
   display: block;
   position: absolute;
   left: 0;
+  /* 导航栏高度固定为70px, 见Header.vue */
   top: 70px;
   bottom: 0;
   overflow-y: scroll;
@@ -179,8 +180,14 @@ export default {
 .sidebar::-webkit-scrollbar {
   width: 0;
 }
+/* 选择所有带有.sidebar-el-menu类并且不带有.el-menu--collapse类的元素，并设置它们的宽度为200px
+   + .sidebar-el-menu: 这是一个CSS类选择器
+   + :not(.el-menu--collapse): 这是CSS的伪类选择器
+
+  注意, 将该值和main.css中content-box的left偏移保持一致
+ */
 .sidebar-el-menu:not(.el-menu--collapse) {
-  width: 250px;
+  width: 200px;
 }
 .sidebar > ul {
   height: 100%;
