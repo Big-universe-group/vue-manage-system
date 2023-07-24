@@ -1,7 +1,15 @@
 <template>
   <div class="login-wrap">
     <div class="ms-login">
-      <div class="ms-title">后台管理系统</div>
+      <div class="ms-login-title-container">
+        <div class="ms-login-title">登录</div>
+        <div class="ms-login-title-goto">
+          <el-button class="ms-login-title-goto-btn" type="text" @click="goToRegisterPage">
+            前往注册
+            <i class="el-icon-arrow-right"></i>
+          </el-button>
+        </div>
+      </div>
       <el-form :model="param" :rules="rules" ref="login" label-width="0px" class="ms-content">
         <el-form-item prop="username">
           <el-input v-model="param.username" placeholder="username">
@@ -10,7 +18,7 @@
         </el-form-item>
         <el-form-item prop="password">
           <el-input type="password" placeholder="password" v-model="param.password" @keyup.enter.native="submitForm()">
-            <el-button slot="prepend" icon="el-icon-lx-lock"></el-button>
+            <el-button slot="prepend" icon="el-icon-lx-lock" />
           </el-input>
         </el-form-item>
         <div class="login-btn">
@@ -50,6 +58,10 @@ export default {
         }
       });
     },
+    /* 进入注册页面 */
+    goToRegisterPage() {
+      this.$router.push("/register");
+    },
   },
 };
 </script>
@@ -62,14 +74,34 @@ export default {
   background-image: url(~@/assets/img/login-bg.jpg);
   background-size: 100%;
 }
-.ms-title {
+
+/* 登录框首行样式设置: 标题, 跳转链接, 布局等 */
+.ms-login-title-container {
+  display: flex;
   width: 100%;
+  justify-content: space-between;
+  align-items: center;
+}
+.ms-login-title-container div {
+  flex: 1;
   line-height: 50px;
+  border-bottom: 1px solid #ddd;
+}
+.ms-login-title {
   text-align: center;
   font-size: 20px;
   color: #fff;
-  border-bottom: 1px solid #ddd;
 }
+.ms-login-title-goto {
+  text-align: right;
+  padding-right: 20px;
+}
+.ms-login-title-goto .el-button--text {
+  font-size: 12px;
+  color: #fff;
+}
+
+/* 登录页面输入框 */
 .ms-login {
   position: absolute;
   top: 50%;

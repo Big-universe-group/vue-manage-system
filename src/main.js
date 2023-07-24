@@ -43,9 +43,10 @@ const i18n = new VueI18n({
  */
 router.beforeEach((to, from, next) => {
   document.title = `${to.meta.title} | bamboo`;
+  let unauthRouters = ["/login", "/register"];
 
   const role = localStorage.getItem("ms_username");
-  if (!role && to.path !== "/login") {
+  if (!role && !unauthRouters.includes(to.path)) {
     next("/login");
   } else if (to.meta.permission) {
     // 如果是管理员权限则可进入，这里只是简单的模拟管理员权限而已
