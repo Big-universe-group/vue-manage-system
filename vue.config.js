@@ -24,6 +24,6 @@ module.exports = {
   },
   // 设置路径前缀
   chainWebpack: (config) => {
-    config.resolve.alias.set("@", resolve("src")).set("api", resolve("src/apis"));
+    config.resolve.alias.set("@", resolve("src")); // src目录别名, 对于aseets目录别名, 使用的时候: ~@/assets
   },
 };

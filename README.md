@@ -41,3 +41,9 @@ project
 │   package.json   // npm配置
 │   README.md      // 项目说明
 ```
+
+2. 别名配置
+
+首先, 在 vue.config.js 中增加 alias 配置, 具体见文件中配置.
+
+另外, 正常的 Vue Component 导入直接使用`@`即可, 但是对于 assets 中的资源导入, 需要使用`~@`来完成.
