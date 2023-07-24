@@ -11,15 +11,16 @@
         </div>
       </div>
       <el-form :model="param" :rules="rules" ref="login" label-width="0px" class="ms-content">
-        <el-form-item prop="username">
+        <el-form-item prop="username" class="custom-form-item">
           <el-input v-model="param.username" placeholder="username">
-            <el-button slot="prepend" icon="el-icon-lx-people"></el-button>
+            <!-- <el-button slot="prepend" icon="el-icon-lx-people"></el-button> -->
           </el-input>
         </el-form-item>
-        <el-form-item prop="password">
+        <el-form-item prop="password" class="custom-form-item">
           <el-input type="password" placeholder="password" v-model="param.password" @keyup.enter.native="submitForm()">
-            <el-button slot="prepend" icon="el-icon-lx-lock" />
+            <!-- <el-button slot="prepend" icon="el-icon-lx-lock" /> -->
           </el-input>
+          <div class="login-forget-passwd" @click="goToResetPwdPage">忘记密码</div>
         </el-form-item>
         <div class="login-btn">
           <el-button type="primary" @click="submitForm()">登录</el-button>
@@ -61,6 +62,10 @@ export default {
     /* 进入注册页面 */
     goToRegisterPage() {
       this.$router.push("/register");
+    },
+    /* 进入密码忘记页面 */
+    goToResetPwdPage() {
+      this.$router.push("/reset");
     },
   },
 };
@@ -104,18 +109,12 @@ export default {
 /* 登录页面输入框 */
 .ms-login {
   position: absolute;
-  top: 50%;
   width: 350px;
-  /*
-     居中
-  left: 50%;
-  margin: -190px 0 0 -175px;
-  */
-
-  /* 靠右边 */
+  /* 在宽度确定, 高度不确定的情况下, Y轴居中 */
+  top: 50%;
   right: 0%;
-  margin: -190px 20px 0 0;
-
+  margin: 0 50px 0 0;
+  transform: translateY(-50%);
   border-radius: 5px;
   background: rgba(255, 255, 255, 0.3);
   overflow: hidden;
@@ -131,6 +130,21 @@ export default {
   height: 36px;
   margin-bottom: 10px;
 }
+
+/* 通过自定义类来确保el-form-item的样式生效 */
+.custom-form-item {
+  width: 280px;
+}
+.login-forget-passwd {
+  cursor: pointer;
+  transition: right ease 150ms;
+  color: blue;
+  position: absolute;
+  right: 16px;
+  top: 50%;
+  transform: translate(0, -50%);
+}
+
 .login-tips {
   font-size: 12px;
   line-height: 30px;

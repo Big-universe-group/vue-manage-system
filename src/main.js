@@ -43,7 +43,7 @@ const i18n = new VueI18n({
  */
 router.beforeEach((to, from, next) => {
   document.title = `${to.meta.title} | bamboo`;
-  let unauthRouters = ["/login", "/register"];
+  let unauthRouters = ["/login", "/register", "/reset"];
 
   const role = localStorage.getItem("ms_username");
   if (!role && !unauthRouters.includes(to.path)) {

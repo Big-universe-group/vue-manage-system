@@ -109,6 +109,11 @@ export default new Router({
       meta: { title: "注册" },
     },
     {
+      path: "/reset",
+      component: () => import(/* webpackChunkName: "reset" */ "@/pages/auth/Reset.vue"),
+      meta: { title: "重置密码" },
+    },
+    {
       path: "*",
       redirect: "/404",
     },

@@ -16,6 +16,13 @@
             <!-- <el-button slot="prepend" icon="el-icon-lx-people"></el-button> -->
           </el-input>
         </el-form-item>
+
+        <el-form-item prop="email" class="custom-form-item">
+          <el-input v-model="param.email" placeholder="请输入邮箱">
+            <!-- <el-button slot="prepend" icon="el-icon-message"></el-button> -->
+          </el-input>
+        </el-form-item>
+
         <el-form-item prop="password" class="custom-form-item">
           <el-input type="password" placeholder="请输入密码" v-model="param.password">
             <!-- <el-button slot="prepend" icon="el-icon-lx-lock"></el-button> -->
@@ -24,11 +31,6 @@
         <el-form-item prop="confirmPassword" class="custom-form-item">
           <el-input type="password" placeholder="请确认密码" v-model="param.confirmPassword">
             <!-- <el-button slot="prepend" icon="el-icon-lx-lock"></el-button> -->
-          </el-input>
-        </el-form-item>
-        <el-form-item prop="phone" class="custom-form-item">
-          <el-input v-model="param.phone" placeholder="请输入手机号">
-            <!-- <el-button slot="prepend" icon="el-icon-mobile"></el-button> -->
           </el-input>
         </el-form-item>
 
@@ -46,12 +48,6 @@
             <el-option label="男" value="male" class="custom-el-select"></el-option>
             <el-option label="女" value="female" class="custom-el-select"></el-option>
           </el-select>
-        </el-form-item>
-
-        <el-form-item prop="email" class="custom-form-item">
-          <el-input v-model="param.email" placeholder="请输入邮箱">
-            <!-- <el-button slot="prepend" icon="el-icon-message"></el-button> -->
-          </el-input>
         </el-form-item>
 
         <div class="register-btn">
