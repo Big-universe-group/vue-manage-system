@@ -115,7 +115,7 @@
 </template>
 
 <script>
-import SimpleApi from "../../api/index";
+import SimpleApi from "@/api/simpleApi";
 export default {
   name: "basetable",
   data() {

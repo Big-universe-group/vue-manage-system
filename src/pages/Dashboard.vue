@@ -5,7 +5,7 @@
       <el-col :span="8">
         <el-card shadow="hover" class="mgb20" style="height: 252px">
           <div class="user-info">
-            <img src="../../assets/img/img.jpg" class="user-avator" alt />
+            <img src="@/assets/img/img.jpg" class="user-avator" alt />
             <div class="user-info-cont">
               <div class="user-info-name">{{ name }}</div>
               <div>{{ role }}</div>
@@ -139,10 +139,11 @@
 </template>
 
 <script>
-import SimpleApi from "../../api/index";
-import CommonDateHandler from "../../utils/date";
 import Schart from "vue-schart";
-import bus from "../common/bus";
+
+import SimpleApi from "@/api/simpleApi";
+import CommonDateHandler from "@/utils/date";
+import bus from "@/store/bus";
 /*
 页面: 管理后台控制台首页
  */

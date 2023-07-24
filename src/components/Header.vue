@@ -25,7 +25,7 @@
                     用于在页面中创建可点击的导航链接
                 b. el-icon-bell 是 Element UI 提供的一个图标组件，用于显示一个钟形的图标
             -->
-            <router-link to="/tabs">
+            <router-link to="/messages">
               <i class="el-icon-bell"></i>
             </router-link>
           </el-tooltip>
@@ -34,7 +34,7 @@
 
         <!-- 用户头像 -->
         <div class="user-avator">
-          <img src="../../assets/img/img.jpg" />
+          <img src="@/assets/img/img.jpg" />
         </div>
 
         <!-- 用户名下拉菜单 -->
@@ -55,7 +55,7 @@
   </div>
 </template>
 <script>
-import bus from "../common/bus";
+import bus from "@/store/bus";
 export default {
   data() {
     return {

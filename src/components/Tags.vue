@@ -30,7 +30,7 @@
 </template>
 
 <script>
-import bus from "./bus";
+import bus from "@/store/bus";
 export default {
   data() {
     return {

@@ -48,7 +48,7 @@
 </template>
 
 <script>
-import bus from "../common/bus";
+import bus from "@/store/bus";
 export default {
   data() {
     return {
@@ -66,8 +66,8 @@ export default {
         },
         {
           icon: "el-icon-lx-copy",
-          index: "tabs",
-          title: "tab选项卡",
+          index: "messages",
+          title: "系统消息",
         },
         {
           icon: "el-icon-lx-calendar",
