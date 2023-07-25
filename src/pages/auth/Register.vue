@@ -40,6 +40,17 @@
           </el-input>
         </el-form-item>
 
+        <!-- options是一个包含三级联动信息的对象数组 -->
+        <el-form-item prop="city" class="custom-form-item">
+          <el-cascader
+            size="large"
+            placeholder="请选择所在城市"
+            v-model="param.cityInfo"
+            :options="provinceInfo"
+            @change="onCityChange"
+            class="custom-form-item"></el-cascader>
+        </el-form-item>
+
         <el-form-item prop="gender" class="custom-form-item">
           <!-- Element-UI 的 el-select 使用的其实是 input 标签 , 
               而 input 标签在浏览器中存在一个默认的宽度 , 大约是 100px (不同的浏览器表现不同) . 
@@ -60,14 +71,22 @@
 </template>
 
 <script>
+import provinceInfo from "@/data/province";
+
 export default {
   data: function () {
     return {
       param: {
         username: "",
+        email: "",
         password: "",
         confirmPassword: "",
+        age: "",
+        cityInfo: [], // 省市
+        city: "",
+        province: "",
       },
+      provinceInfo,
       rules: {
         username: [{ required: true, message: "请输入用户名", trigger: "blur" }],
         password: [{ required: true, message: "请输入密码", trigger: "blur" }],
@@ -103,11 +122,32 @@ export default {
     goToLoginPage() {
       this.$router.push("/login");
     },
+    // 注意, 这种回调函数报错, 在控制台中只可能看到如下错误: Error in v-on handler
+    onCityChange() {
+      if (this.param.cityInfo.length < 2) {
+        // 选择省信息
+        this.param.province = "";
+        this.param.city = "";
+      } else {
+        // 选择省和市
+        this.provinceInfo.map((item) => {
+          if (item.value === this.param.cityInfo[0]) {
+            this.param.province = item.label;
+            item.children.map((subItem) => {
+              if (subItem.value === this.param.cityInfo[1]) {
+                this.param.city = subItem.label;
+              }
+            });
+          }
+        });
+      }
+    },
   },
 };
 </script>
 
 <style scoped>
+/* 1. 外层container样式 */
 .register-wrap {
   position: relative;
   width: 100%;
@@ -128,7 +168,7 @@ export default {
   overflow: hidden;
 }
 
-/* 首行样式设置: 标题, 跳转链接, 布局等 */
+/* 2. 首行样式设置: 标题, 跳转链接, 布局等 */
 .ms-register-title-container {
   display: flex;
   width: 100%;
@@ -157,9 +197,16 @@ export default {
   color: #fff;
 }
 
-/* 输入框 */
+/* 3. 输入行样式: 按钮, 输入框等 */
 .ms-content {
   padding: 30px 30px;
+}
+
+/* 通过自定义类来统一的让el-form-item的某些演示保持一致: 注意样式权重(类,伪类,属性都是10)
+   -> 在相同权重的情况, 定义的位置决定了最终的样式(重要)
+ */
+.custom-form-item {
+  width: 280px;
 }
 .register-btn {
   /* 设置按钮的布局方式 */
@@ -171,11 +218,6 @@ export default {
   flex: 1;
   height: 36px;
   margin-bottom: 10px;
-}
-
-/* 通过自定义类来确保el-form-item的样式生效 */
-.custom-form-item {
-  width: 280px;
 }
 .custom-el-select {
   /* width: 200px; */
