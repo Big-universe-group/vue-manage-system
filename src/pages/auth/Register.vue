@@ -40,14 +40,21 @@
           </el-input>
         </el-form-item>
 
-        <!-- options是一个包含三级联动信息的对象数组 -->
+        <!-- options是一个包含三级联动信息的对象数组
+          props:
+            + expandTrigger: hover-鼠标移动触发级联, 默认-鼠标点击
+          filterable: true-开启搜索功能
+        -->
         <el-form-item prop="city" class="custom-form-item">
           <el-cascader
             size="large"
+            filterable
+            :props="{ expandTrigger: 'hover' }"
             placeholder="请选择所在城市"
             v-model="param.cityInfo"
             :options="provinceInfo"
             @change="onCityChange"
+            popper-class="my-el-cascader-register"
             class="custom-form-item"></el-cascader>
         </el-form-item>
 
@@ -229,5 +236,15 @@ export default {
   font-size: 12px;
   line-height: 30px;
   color: #fff;
+}
+
+/* 注意: 使用 ::v-deep 或 /deep/ 或 >>> 深度选择器仅仅是可以将样式影响到子组件中
+   .a >>> .b 变为 .a[data-vf3f3eg9] .b
+
+在element-ui中, 大部分情况下特别是那种下拉框等情况, 此时就不能使用scoped了.
+ */
+.my-el-cascader-register .el-cascader-panel {
+  /* 在这里设置您想要调整的样式 */
+  flex-direction: row-reverse !important;
 }
 </style>
