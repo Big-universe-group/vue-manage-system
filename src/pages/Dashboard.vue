@@ -153,7 +153,7 @@ export default {
     return {
       name: localStorage.getItem("ms_username"),
       todoList: [],
-      salesData: { options: {}, options2: {} }, // 销售信息
+      salesData: { options: {}, options2: {}, options3: {}, options4: {} }, // 销售信息
       statisticsInfo: {
         // 统计信息, 确保子对象不为空, 否则开始就会报错
       },

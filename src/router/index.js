@@ -96,6 +96,11 @@ export default new Router({
           component: () => import(/* webpackChunkName: "donate" */ "@/pages/Donate.vue"),
           meta: { title: "支持作者" },
         },
+        {
+          path: "/person",
+          component: () => import(/* webpackChunkName: "person" */ "@/pages/person/PersonCenter.vue"),
+          meta: { title: "个人中心" },
+        },
       ],
     },
     {
