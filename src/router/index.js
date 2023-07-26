@@ -58,16 +58,10 @@ export default new Router({
           meta: { title: "文件上传" },
         },
         {
-          // 拖拽列表组件
-          path: "/drag",
-          component: () => import(/* webpackChunkName: "drag" */ "@/pages/DragList.vue"),
-          meta: { title: "拖拽列表" },
-        },
-        {
-          // 拖拽Dialog组件
-          path: "/dialog",
-          component: () => import(/* webpackChunkName: "dragdialog" */ "@/pages/DragDialog.vue"),
-          meta: { title: "拖拽弹框" },
+          // 工作流程列表-使用到拖拽技术
+          path: "/task",
+          component: () => import(/* webpackChunkName: "task" */ "@/pages/TaskList.vue"),
+          meta: { title: "工作流程" },
         },
         {
           // 国际化组件

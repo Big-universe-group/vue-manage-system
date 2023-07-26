@@ -105,18 +105,8 @@ export default {
         },
         {
           icon: "el-icon-rank",
-          index: "6",
-          title: "拖拽组件",
-          subs: [
-            {
-              index: "drag",
-              title: "拖拽列表",
-            },
-            {
-              index: "dialog",
-              title: "拖拽弹框",
-            },
-          ],
+          index: "task",
+          title: "工作流程",
         },
         {
           icon: "el-icon-lx-global",

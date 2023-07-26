@@ -15,6 +15,6 @@ export default {
 .personSecureSettingContainer {
   height: 400px;
   width: 100%;
-  background-color: green;
+  background-color: blueviolet;
 }
 </style>
