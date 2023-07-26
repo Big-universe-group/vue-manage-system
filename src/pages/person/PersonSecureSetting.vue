@@ -1,5 +1,5 @@
 <template>
-  <div class="personSettingSettingContainer"></div>
+  <div class="personSecureSettingContainer"></div>
 </template>
 
 <script>
@@ -12,7 +12,7 @@ export default {
 </script>
 
 <style scope>
-.personSettingSettingContainer {
+.personSecureSettingContainer {
   height: 400px;
   width: 100%;
   background-color: green;

@@ -57,7 +57,7 @@ export default {
 
 <style scope>
 .person {
-  height: 600px;
+  height: 500px;
   background-color: #fff;
   margin: 20px 20px 0 20px;
 }
