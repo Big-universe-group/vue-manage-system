@@ -143,8 +143,8 @@ export default {
     // 获取 easy-mock 的模拟数据
     getData() {
       SimpleApi.fetchPersonInfos(this.query).then((res) => {
-        this.tableData = res.list;
-        this.pageTotal = res.pageTotal || 50;
+        this.tableData = res.data.list;
+        this.pageTotal = res.data.pageTotal || 50;
       });
     },
     // 触发搜索按钮

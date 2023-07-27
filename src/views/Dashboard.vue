@@ -206,7 +206,7 @@ export default {
     getTodoListInfos() {
       SimpleApi.fetchTodoListInfos()
         .then((result) => {
-          this.todoList = result;
+          this.todoList = result.data;
         })
         .catch((error) => {
           console.log(error);
@@ -226,7 +226,7 @@ export default {
       // 调用 API 方法获取最近一周的销售数据
       SimpleApi.fetchSalesData({ startDate, endDate })
         .then((result) => {
-          this.salesData = result;
+          this.salesData = result.data;
         })
         .catch((error) => {
           console.log(error);
@@ -237,7 +237,7 @@ export default {
     getStatisticsInfo() {
       SimpleApi.fetchStatisticsData()
         .then((result) => {
-          this.statisticsInfo = result;
+          this.statisticsInfo = result.data;
         })
         .catch((error) => {
           console.log(error);

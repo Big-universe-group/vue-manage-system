@@ -10,14 +10,18 @@
           </el-button>
         </div>
       </div>
-      <el-form :model="param" :rules="rules" ref="login" label-width="0px" class="ms-content">
+      <el-form :model="loginForm" :rules="rules" ref="login" label-width="0px" class="ms-content">
         <el-form-item prop="username" class="custom-form-item">
-          <el-input v-model="param.username" placeholder="username">
+          <el-input v-model="loginForm.username" placeholder="username">
             <!-- <el-button slot="prepend" icon="el-icon-lx-people"></el-button> -->
           </el-input>
         </el-form-item>
         <el-form-item prop="password" class="custom-form-item">
-          <el-input type="password" placeholder="password" v-model="param.password" @keyup.enter.native="submitForm()">
+          <el-input
+            type="password"
+            placeholder="password"
+            v-model="loginForm.password"
+            @keyup.enter.native="submitForm()">
             <!-- <el-button slot="prepend" icon="el-icon-lx-lock" /> -->
           </el-input>
           <div class="login-forget-passwd" @click="goToResetPwdPage">忘记密码</div>
@@ -40,9 +44,9 @@ export default {
   },
   data: function () {
     return {
-      param: {
+      loginForm: {
         username: "admin",
-        password: "123123",
+        password: "123456",
       },
       rules: {
         username: [{ required: true, message: "请输入用户名", trigger: "blur" }],
@@ -52,17 +56,22 @@ export default {
   },
   methods: {
     submitForm() {
-      this.$refs.login.validate((valid) => {
-        if (valid) {
-          this.$message.success("登录成功");
-          localStorage.setItem("ms_username", this.param.username);
-          this.$router.push("/");
-          return true;
-        } else {
+      this.$refs.login.validate(async (valid) => {
+        if (!valid) {
           this.$message.error("请输入账号和密码");
           console.log("error submit!!");
           return false;
         }
+        const { data: result } = await this.$http.post("login", this.loginForm);
+        if (result.meta.status !== 200) return this.$message.error("登录失败");
+
+        this.$message.success("登录成功");
+        // 存储在local storage中
+        localStorage.setItem("ms_username", this.loginForm.username);
+        // 存储在session storage中
+        window.sessionStorage.setItem("token", result.data.token);
+        this.$router.push("/");
+        return true;
       });
     },
     /* 进入注册页面 */

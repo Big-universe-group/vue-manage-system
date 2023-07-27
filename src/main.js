@@ -6,10 +6,12 @@ import VueI18n from "vue-i18n";
 import "element-ui/lib/theme-chalk/index.css"; // 默认主题
 
 import {messages} from "@/utils/i18n";
+import axiosapi from "@/utils/request";
 import "@/assets/css/icon.css";
 import "@/plugins/directives";
 import "babel-polyfill";
 
+Vue.prototype.$http = axiosapi;
 Vue.config.productionTip = false;
 Vue.use(VueI18n);
 Vue.use(ElementUI, {
