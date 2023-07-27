@@ -7,6 +7,9 @@
 <script>
 export default {
   methods: {
+    /*
+      功能: 看板娘的鼠标拖动移动功能
+    */
     addKBNMouseClickEvent() {
       const waifu = document.getElementById("waifu");
       const waifuTool = document.getElementById("waifu-tool");
