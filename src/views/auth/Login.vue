@@ -32,7 +32,7 @@
 </template>
 
 <script>
-import AuthLayout from "@/pages/auth/AuthLayout";
+import AuthLayout from "@/views/auth/AuthLayout";
 
 export default {
   components: {
