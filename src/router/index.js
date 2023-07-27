@@ -98,19 +98,25 @@ export default new Router({
       ],
     },
     {
-      path: "/login",
-      component: () => import(/* webpackChunkName: "login" */ "@/pages/auth/Login.vue"),
-      meta: { title: "登录" },
-    },
-    {
-      path: "/register",
-      component: () => import(/* webpackChunkName: "register" */ "@/pages/auth/Register.vue"),
-      meta: { title: "注册" },
-    },
-    {
-      path: "/reset",
-      component: () => import(/* webpackChunkName: "reset" */ "@/pages/auth/Reset.vue"),
-      meta: { title: "重置密码" },
+      path: "/auth", // 统一路由
+      component: () => import("@/pages/auth/AuthLayout.vue"), // 统一布局组件，包含登录、注册、重置密码页面的共同样式和结构
+      children: [
+        {
+          path: "login", // 子路由
+          component: () => import("@/pages/auth/Login.vue"),
+          meta: { title: "登录" },
+        },
+        {
+          path: "register", // 子路由
+          component: () => import("@/pages/auth/Register.vue"),
+          meta: { title: "注册" },
+        },
+        {
+          path: "reset", // 子路由
+          component: () => import("@/pages/auth/Reset.vue"),
+          meta: { title: "重置密码" },
+        },
+      ],
     },
     {
       path: "*",

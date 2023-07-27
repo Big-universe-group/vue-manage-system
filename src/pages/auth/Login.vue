@@ -32,7 +32,12 @@
 </template>
 
 <script>
+import AuthLayout from "@/pages/auth/AuthLayout";
+
 export default {
+  components: {
+    AuthLayout,
+  },
   data: function () {
     return {
       param: {
@@ -62,11 +67,11 @@ export default {
     },
     /* 进入注册页面 */
     goToRegisterPage() {
-      this.$router.push("/register");
+      this.$router.push("/auth/register");
     },
     /* 进入密码忘记页面 */
     goToResetPwdPage() {
-      this.$router.push("/reset");
+      this.$router.push("/auth/reset");
     },
   },
 };

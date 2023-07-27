@@ -71,7 +71,7 @@ export default {
         if (valid) {
           // 处理重置密码逻辑，可以在这里提交新密码
           this.$message.success("重置密码成功");
-          this.$router.push("/login"); // 重置密码成功后跳转到登录页
+          this.$router.push("/auth/login"); // 重置密码成功后跳转到登录页
         } else {
           this.$message.error("请输入正确的新密码");
         }
@@ -79,7 +79,7 @@ export default {
     },
     /* 进入登录页面 */
     goToLoginPage() {
-      this.$router.push("/login");
+      this.$router.push("/auth/login");
     },
     /* 发送验证码 */
     sendVerifyCode() {
