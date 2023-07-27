@@ -39,11 +39,11 @@ export default new Router({
           component: () => import(/* webpackChunkName: "form" */ "@/views/BaseForm.vue"),
           meta: {title: "基本表单"},
         },
-        // {
-        //   path: "/goods",
-        //   component: () => import(/* webpackChunkName: "form" */ "@/views/GoodsLayout.vue"),
-        //   meta: {title: "商品列表"},
-        // },
+        {
+          path: "/goods",
+          component: () => import(/* webpackChunkName: "form" */ "@/views/goods/GoodsLayout.vue"),
+          meta: {title: "商品列表"},
+        },
         {
           // 富文本编辑器组件
           path: "/editor",
