@@ -57,9 +57,10 @@ export default {
   data() {
     return {
       collapse: false,
+      // 注意, 一旦item中存在2级路由, 则其他index都应该使用绝对路径, 否则会404
       items: [
-        { icon: "el-icon-lx-home", index: "dashboard", title: "系统首页" },
-        { icon: "el-icon-lx-cascades", index: "userinfos", title: "用户列表" },
+        { icon: "el-icon-lx-home", index: "/dashboard", title: "系统首页" },
+        { icon: "el-icon-lx-cascades", index: "/userinfos", title: "用户列表" },
         {
           icon: "el-icon-lx-copy",
           index: "1",
@@ -86,43 +87,33 @@ export default {
             { index: "/goods/list", title: "商品列表" },
             { index: "/goods/params", title: "分类参数" },
             { index: "/goods/categories", title: "商品分类" },
+            {
+              // 主要用于测试三级菜单
+              index: "3-2",
+              title: "商品操作",
+              icon: "el-icon-lx-hot",
+              subs: [{ index: "/goods/add", title: "商品添加" }],
+            },
           ],
         },
         {
           icon: "el-icon-s-order",
           index: "4",
           title: "订单管理",
-          subs: [{ index: "orders", title: "订单列表" }],
+          subs: [{ index: "/orders", title: "订单列表" }],
         },
         {
           icon: "el-icon-lx-calendar",
           index: "5",
           title: "表单相关",
           subs: [
-            { index: "form", title: "基本表单" },
-            {
-              index: "4-2",
-              title: "三级菜单",
-              subs: [
-                { index: "editor", title: "富文本编辑器" },
-                { index: "markdown", title: "markdown编辑器" },
-              ],
-            },
-            { index: "upload", title: "文件上传" },
+            { index: "/form", title: "基本表单" },
+            { index: "/editor", title: "富文本编辑器" },
+            { index: "/markdown", title: "markdown编辑器" },
+            { index: "/upload", title: "文件上传" },
           ],
         },
-        { icon: "el-icon-lx-emoji", index: "icon", title: "自定义图标" },
         { icon: "el-icon-rank", index: "task", title: "工作流程" },
-        { icon: "el-icon-lx-global", index: "i18n", title: "国际化功能" },
-        {
-          icon: "el-icon-lx-warn",
-          index: "7",
-          title: "错误处理",
-          subs: [
-            { index: "permission", title: "权限测试" },
-            { index: "404", title: "404页面" },
-          ],
-        },
         { icon: "el-icon-lx-redpacket_fill", index: "/donate", title: "支持作者" },
       ],
     };
