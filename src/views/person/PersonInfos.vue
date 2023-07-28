@@ -22,11 +22,11 @@
           :disabled="checkAtLeastOneSelected">
           批量删除
         </el-button>
-        <el-select v-model="query.address" placeholder="地址" class="handle-select mr10">
+        <el-select v-model="searchForm.address" placeholder="地址" class="handle-select mr10">
           <el-option key="1" label="广东省" value="广东省"></el-option>
           <el-option key="2" label="湖南省" value="湖南省"></el-option>
         </el-select>
-        <el-input v-model="query.name" placeholder="用户名" class="handle-input mr10"></el-input>
+        <el-input v-model="searchForm.username" placeholder="用户名" class="handle-input mr10"></el-input>
         <el-button type="primary" icon="el-icon-search" @click="handleSearch">搜索</el-button>
       </div>
 
@@ -39,41 +39,69 @@
           + align: 对齐方式
       -->
       <el-table
-        :data="tableData"
+        :data="personInfoList"
         border
-        class="table"
+        table-layout="auto"
+        class="person-table"
         ref="multipleTable"
         header-cell-class-name="table-header"
         @selection-change="handleSelectionChange">
         <el-table-column type="selection" width="55" align="center"></el-table-column>
 
         <el-table-column prop="id" label="ID" width="55" align="center"></el-table-column>
-        <el-table-column prop="name" label="用户名"></el-table-column>
-        <el-table-column label="账户余额">
-          <template slot-scope="scope">￥{{ scope.row.money }}</template>
-        </el-table-column>
-
-        <el-table-column label="头像(查看大图)" align="center">
-          <template slot-scope="scope">
-            <el-image class="table-td-thumb" :src="scope.row.thumb" :preview-src-list="[scope.row.thumb]"></el-image>
-          </template>
-        </el-table-column>
+        <el-table-column prop="username" label="用户名"></el-table-column>
+        <el-table-column prop="email" label="邮箱"></el-table-column>
+        <el-table-column prop="mobile" label="电话"></el-table-column>
         <el-table-column prop="address" label="地址"></el-table-column>
-        <el-table-column label="状态" align="center">
+        <el-table-column prop="role_name" label="角色"></el-table-column>
+
+        <!-- 通过slot-scope属性来获取当前行数据，并根据mg_state字段的值来展示不同类型的标签
+            success: 绿色
+            danger: 红色
+            其他
+          <el-table-column label="状态" align="center">
+            <template slot-scope="scope">
+              <el-tag :type="scope.row.mg_state === true ? 'success' : scope.row.state === false ? 'danger' : ''">
+                {{ scope.row.mg_state }}
+              </el-tag>
+            </template>
+          </el-table-column>
+        -->
+        <el-table-column label="状态" width="75">
+          <!-- 作用域插槽 会覆盖prop -->
           <template slot-scope="scope">
-            <el-tag :type="scope.row.state === '成功' ? 'success' : scope.row.state === '失败' ? 'danger' : ''">
-              {{ scope.row.state }}
-            </el-tag>
+            <el-switch v-model="scope.row.mg_state" @change="userStateChange(scope.row)"></el-switch>
           </template>
         </el-table-column>
 
-        <el-table-column prop="date" label="注册时间"></el-table-column>
-        <el-table-column label="操作" width="180" align="center">
+        <el-table-column prop="create_time" label="注册时间" :class-name="'person-date-column'">
           <template slot-scope="scope">
-            <el-button type="text" icon="el-icon-edit" @click="handleEdit(scope.$index, scope.row)">编辑</el-button>
-            <el-button type="text" icon="el-icon-delete" class="red" @click="handleDelete(scope.$index, scope.row)">
-              删除
-            </el-button>
+            {{ scope.row.create_time | dateFormat }}
+          </template>
+        </el-table-column>
+        <el-table-column label="操作" width="130" align="center">
+          <template slot-scope="scope">
+            <!-- type决定了图标的背景 -->
+            <el-button
+              type="primary"
+              icon="el-icon-edit"
+              size="mini"
+              circle
+              @click="handleEdit(scope.$index, scope.row)"></el-button>
+            <el-button
+              type="danger"
+              icon="el-icon-delete"
+              size="mini"
+              circle
+              @click="handleDelete(scope.$index, scope.row)"></el-button>
+            <el-tooltip effect="dark" content="分配角色" placement="top" :enterable="false">
+              <el-button
+                type="warning"
+                icon="el-icon-setting"
+                size="mini"
+                circle
+                @click="getEnableRoles(scope.row)"></el-button>
+            </el-tooltip>
           </template>
         </el-table-column>
       </el-table>
@@ -89,26 +117,51 @@
         <el-pagination
           background
           layout="total, prev, pager, next"
-          :current-page="query.pageIndex"
-          :page-size="query.pageSize"
+          :current-page="searchForm.pagenum"
+          :page-size="searchForm.pagesize"
           :total="pageTotal"
           @current-change="handlePageChange"></el-pagination>
       </div>
     </div>
 
-    <!-- 3. 编辑弹出框 -->
-    <el-dialog title="编辑" :visible.sync="editVisible" width="30%">
-      <el-form ref="form" :model="form" label-width="70px">
-        <el-form-item label="用户名">
-          <el-input v-model="form.name"></el-input>
+    <!-- 3. 编辑弹出框, 注意el-form-item中的prop实际上和rules中的key对应 -->
+    <el-dialog title="编辑" :visible.sync="editDialogVisible" width="30%">
+      <el-form ref="editFormRef" :model="editForm" :rules="addFormRules" label-width="70px">
+        <el-form-item label="用户名" prop="username">
+          <el-input v-model="editForm.username"></el-input>
         </el-form-item>
-        <el-form-item label="地址">
-          <el-input v-model="form.address"></el-input>
+        <el-form-item label="邮箱" prop="email">
+          <el-input v-model="editForm.email"></el-input>
+        </el-form-item>
+        <el-form-item label="电话" prop="mobile">
+          <el-input v-model="editForm.mobile"></el-input>
+        </el-form-item>
+        <el-form-item label="地址" prop="address">
+          <el-input v-model="editForm.address"></el-input>
         </el-form-item>
       </el-form>
       <span slot="footer" class="dialog-footer">
-        <el-button @click="editVisible = false">取 消</el-button>
+        <el-button @click="editDialogVisible = false">取 消</el-button>
         <el-button type="primary" @click="saveEdit">确 定</el-button>
+      </span>
+    </el-dialog>
+
+    <!-- 4. 分配角色的对话框 -->
+    <el-dialog title="分配角色" :visible.sync="setRoleDialogVisible" width="50%" @close="setRoleDialogClosed">
+      <div>
+        <p>当前用户：{{ selectUserInfo.username }}</p>
+        <p>当前角色：{{ selectUserInfo.role_name }}</p>
+        <p>
+          分配新角色：
+          <el-select v-model="selectedRoleId" placeholder="请选择">
+            <el-option v-for="item in rolesList" :key="item.id" :label="item.roleName" :value="item.id"></el-option>
+          </el-select>
+        </p>
+      </div>
+      <!-- 底部区域 -->
+      <span slot="footer" class="dialog-footer">
+        <el-button @click="setRoleDialogVisible = false">取 消</el-button>
+        <el-button type="primary" @click="saveRoleInf">确 定</el-button>
       </span>
     </el-dialog>
   </div>
@@ -119,38 +172,132 @@ import SimpleApi from "@/api/simpleApi";
 export default {
   name: "basetable",
   data() {
+    // 验证手机号的规则
+    var checkMoblie = (rule, value, callback) => {
+      // 验证手机号的正则表达式
+      const regMoblie = /^(13[0-9]|14[5|7]|15[0|1|2|3|4|5|6|7|8|9]|18[0|1|2|3|5|6|7|8|9])\d{8}$/;
+      if (regMoblie.test(value)) {
+        return callback();
+      }
+      callback(new Error("请输入合法的手机号"));
+    };
+
     return {
-      query: {
+      // 用户搜索表单
+      searchForm: {
         address: "",
-        name: "",
-        pageIndex: 1,
-        pageSize: 10,
+        username: "",
+        email: "",
+        mobile: "",
+        pagenum: 1,
+        pagesize: 10,
       },
-      tableData: [],
+
+      personInfoList: [],
       multipleSelection: [],
       delList: [],
-      editVisible: false,
+      editDialogVisible: false, // 是否显示用户信息编辑对话框
+
+      // 角色设置
+      selectUserInfo: {}, // 当前被选择的待操作的用户信息
+      selectedRoleId: "",
+      rolesList: [], // 可选角色列表
+      setRoleDialogVisible: false, // 是否显示角色设置对话框
+
       pageTotal: 0,
-      form: {},
       idx: -1,
       id: -1,
+      // 用户编辑表单
+      editForm: {},
+      // 添加表单的验证规则对象
+      addFormRules: {
+        username: [
+          { required: true, message: "请输入用户名", trigger: "blur" },
+          {
+            min: 3,
+            max: 10,
+            message: "用户名的长度在3-10个字符之间",
+            trigger: "blur",
+          },
+        ],
+        password: [
+          { required: true, message: "请输入密码", trigger: "blur" },
+          {
+            min: 6,
+            max: 15,
+            message: "密码的长度在6-15个字符之间",
+            trigger: "blur",
+          },
+        ],
+        email: [
+          { required: true, message: "请输入邮箱", trigger: "blur" },
+          // { validator: checkEmail, trigger: 'blur' },
+          {
+            type: "email",
+            message: "请输入正确的邮箱地址",
+            trigger: ["blur", "change"],
+          },
+        ],
+        mobile: [
+          { required: true, message: "请输入手机号", trigger: "blur" },
+          { validator: checkMoblie, trigger: "blur" },
+          // { type: 'mobliephone', message: '请输入正确的邮箱地址', trigger: ['blur', 'change'] }
+        ],
+      },
     };
   },
   created() {
-    this.getData();
+    this.getUserList();
   },
   methods: {
     // 获取 easy-mock 的模拟数据
-    getData() {
-      SimpleApi.fetchPersonInfos(this.query).then((res) => {
-        this.tableData = res.data.list;
-        this.pageTotal = res.data.pageTotal || 50;
+    getUserList() {
+      SimpleApi.fetchPersonInfos(this.searchForm).then((res) => {
+        const { data: result } = res;
+        if (result.meta.status !== 200) {
+          return this.$message.error(result.meta.msg || "获取用户列表异常");
+        }
+        this.personInfoList = result.data.users;
+        this.pageTotal = result.data.total || 0;
       });
     },
+    // 展示分配角色的对话框
+    async getEnableRoles(userInfo) {
+      this.selectUserInfo = userInfo;
+      // 在展示对话框之前获取所有角色的列表
+      const { data: result } = await this.$http.get("roles");
+      if (result.meta.status !== 200) return this.$message.error("获取角色列表失败！");
+      this.$message.success("获取角色列表成功！");
+      this.rolesList = result.data;
+      this.setRoleDialogVisible = true;
+    },
+    // 监听分配角色对话框的关闭事件
+    setRoleDialogClosed() {
+      this.selectedRoleId = "";
+      this.selectUserInfo = {};
+    },
+    // 点击按钮分配角色
+    async saveRoleInf() {
+      if (!this.selectedRoleId) {
+        return this.$message.error("请选择一个角色！");
+      }
+      const { data: result } = await this.$http.put(`users/${this.selectUserInfo.id}/role`, {
+        rid: this.selectedRoleId,
+      });
+      if (result.meta.status !== 200) {
+        return this.$message.error("更新角色失败！");
+      }
+      this.$message.success("更新角色成功！");
+      // 刷新当前角色列表
+      this.getUserList();
+      // 隐藏当前分配角色对话框
+      this.setRoleDialogVisible = false;
+    },
+
     // 触发搜索按钮
     handleSearch() {
-      this.$set(this.query, "pageIndex", 1);
-      this.getData();
+      this.$set(this.searchForm, "pagenum", 1);
+      this.getUserList();
     },
     // 删除操作
     handleDelete(index, row) {
@@ -160,7 +307,7 @@ export default {
       })
         .then(() => {
           this.$message.success("删除成功");
-          var item = this.tableData.splice(index, 1);
+          var item = this.personInfoList.splice(index, 1);
           if (item) {
             // 将选项框中的匹配元素也剔除
             this.multipleSelection = this.multipleSelection.filter((obj) => obj.id !== item.id);
@@ -186,7 +333,7 @@ export default {
       let str = "";
       this.delList = this.delList.concat(this.multipleSelection);
       for (let i = 0; i < length; i++) {
-        str += this.multipleSelection[i].name + " ";
+        str += this.multipleSelection[i].username + " ";
       }
       this.$message.error(`删除了${str}`);
       this.multipleSelection = [];
@@ -194,19 +341,47 @@ export default {
     // 编辑操作
     handleEdit(index, row) {
       this.idx = index;
-      this.form = row;
-      this.editVisible = true;
+      this.editForm = row;
+      this.editDialogVisible = true;
     },
     // 保存编辑
     saveEdit() {
-      this.editVisible = false;
-      this.$message.success(`修改第 ${this.idx + 1} 行成功`);
-      this.$set(this.tableData, this.idx, this.form);
+      // this.$message.success(`修改第 ${this.idx + 1} 行成功`);
+      // this.$set(this.personInfoList, this.idx, this.editForm);
+
+      this.$refs.editFormRef.validate(async (valid) => {
+        if (!valid) return;
+        // 发起修改用户信息的数据请求
+        const { data: result } = await this.$http.put("users/" + this.editForm.id, {
+          email: this.editForm.email,
+          mobile: this.editForm.mobile,
+        });
+        if (result.meta.status !== 200) {
+          return this.$message.error("更新用户失败");
+        }
+        // 关闭对话框
+        this.editDialogVisible = false;
+        // 重新获取用户列表
+        this.getUserList();
+        // 提示修改成功
+        this.$message.success("更新用户信息成功");
+      });
     },
+
     // 分页导航
     handlePageChange(val) {
-      this.$set(this.query, "pageIndex", val);
-      this.getData();
+      this.$set(this.searchForm, "pagenum", val);
+      this.getUserList();
+    },
+    // 监听switch开关状态的改变
+    async userStateChange(userinfo) {
+      // 发送请求进行状态修改
+      const { data: result } = await this.$http.put(`users/${userinfo.id}/state/${userinfo.mg_state}`);
+      if (result.meta.status !== 200) {
+        userinfo.mg_state = !userinfo.mg_state;
+        return this.$message.error("更新用户状态失败");
+      }
+      this.$message.success("更新用户状态成功");
     },
   },
   computed: {
@@ -218,7 +393,7 @@ export default {
 };
 </script>
 
-<style scoped>
+<style>
 .handle-box {
   margin-bottom: 20px;
 }
@@ -231,7 +406,7 @@ export default {
   width: 300px;
   display: inline-block;
 }
-.table {
+.person-table {
   width: 100%;
   font-size: 14px;
 }
@@ -246,5 +421,13 @@ export default {
   margin: auto;
   width: 40px;
   height: 40px;
+}
+
+/* 注册时间单元格样式 */
+td.person-date-column div {
+  white-space: nowrap !important; /* 防止日期字符串换行 */
+  overflow: hidden; /* 溢出部分隐藏 */
+  text-overflow: ellipsis; /* 超出部分以省略号表示 */
+  font-size: 12px; /* 初始字体大小 */
 }
 </style>

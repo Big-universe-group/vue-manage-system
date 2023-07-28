@@ -5,7 +5,7 @@ import ElementUI from "element-ui";
 import VueI18n from "vue-i18n";
 import "element-ui/lib/theme-chalk/index.css"; // 默认主题
 
-import {messages} from "@/utils/i18n";
+import { messages } from "@/utils/i18n";
 import axiosapi from "@/utils/request";
 import "@/assets/css/icon.css";
 import "@/plugins/directives";
@@ -76,6 +76,17 @@ router.beforeEach((to, from, next) => {
     next();
   }
   return;
+});
+
+Vue.filter("dateFormat", function (originVal) {
+  const dt = new Date(originVal * 1000);
+  const y = dt.getFullYear();
+  const m = (dt.getMonth() + 1 + "").padStart(2, "0"); // 如果不是两位前面用0填充
+  const d = (dt.getDate() + "").padStart(2, "0");
+  const hh = (dt.getHours() + "").padStart(2, "0");
+  const mm = (dt.getMinutes() + "").padStart(2, "0");
+  const ss = (dt.getSeconds() + "").padStart(2, "0");
+  return `${y}-${m}-${d} ${hh}:${mm}:${ss}`;
 });
 
 new Vue({

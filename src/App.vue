@@ -13,6 +13,9 @@ export default {
     addKBNMouseClickEvent() {
       const waifu = document.getElementById("waifu");
       const waifuTool = document.getElementById("waifu-tool");
+      if (!waifu || !waifuTool) {
+        return;
+      }
 
       // 记录鼠标按下时的初始位置
       let startX;
