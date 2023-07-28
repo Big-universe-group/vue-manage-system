@@ -10,7 +10,7 @@
     </div>
     <div class="container">
       <el-tabs v-model="message">
-        <el-tab-pane :label="`未读消息(${unread.length})`" name="first">
+        <el-tab-pane :label="`未读消息(${unreadMessages.length})`" name="first">
           <el-table :data="unreadData" :show-header="false" style="width: 100%">
             <el-table-column>
               <template slot-scope="scope">
@@ -32,11 +32,13 @@
             </div>
             <!-- 分页组件 -->
             <el-pagination
-              v-if="unread.length > pageSize"
-              :current-page="unreadPage"
+              v-if="unreadMessages.length > 0"
+              layout="total, sizes, prev, pager, next"
+              :total="unreadMessages.length"
+              :page-sizes="[5, 10, 20, 50, 100]"
               :page-size="pageSize"
-              layout="prev, pager, next"
-              :total="unread.length"
+              :current-page="unreadPage"
+              @size-change="handleSizeChange"
               @current-change="handleUnreadPageChange"></el-pagination>
           </div>
         </el-tab-pane>
@@ -62,10 +64,10 @@
               </div>
               <!-- 分页组件 -->
               <el-pagination
-                v-if="read.length > pageSize"
+                v-if="read.length > 0"
                 :current-page="readPage"
                 :page-size="pageSize"
-                layout="prev, pager, next"
+                layout="total, prev, pager, next"
                 :total="read.length"
                 @current-change="handleReadPageChange"></el-pagination>
             </div>
@@ -92,7 +94,7 @@
               </div>
               <!-- 分页组件 -->
               <el-pagination
-                v-if="recycle.length > pageSize"
+                v-if="recycle.length > 0"
                 :current-page="recyclePage"
                 :page-size="pageSize"
                 layout="prev, pager, next"
@@ -113,7 +115,7 @@ export default {
     return {
       message: "first",
       showHeader: false,
-      unread: [
+      unreadMessages: [
         {
           date: "2018-04-19 23:00:00",
           title: "【系统通知】该系统将于今晚凌晨2点到5点进行升级维护",
@@ -151,7 +153,7 @@ export default {
           title: "【系统通知】该系统将于今晚凌晨2点到5点进行升级维护",
         },
       ],
-      pageSize: 5, // 每页默认条数
+      pageSize: 10, // 每页默认条数
       unreadPage: 1, // 未读消息当前页码
       readPage: 1, // 已读消息当前页码
       recyclePage: 1, // 回收站消息当前页码
@@ -159,7 +161,7 @@ export default {
   },
   methods: {
     handleRead(index) {
-      const item = this.unread.splice(index, 1);
+      const item = this.unreadMessages.splice(index, 1);
       console.log(item);
       this.read = item.concat(this.read);
     },
@@ -175,6 +177,9 @@ export default {
     handleUnreadPageChange(page) {
       this.unreadPage = page;
     },
+    handleSizeChange(pageSize) {
+      this.pageSize = pageSize;
+    },
     handleReadPageChange(page) {
       this.readPage = page;
     },
@@ -184,12 +189,12 @@ export default {
   },
   computed: {
     unreadNum() {
-      return this.unread.length;
+      return this.unreadMessages.length;
     },
     // 分页后的未读消息数据
     unreadData() {
       const start = (this.unreadPage - 1) * this.pageSize;
-      return this.unread.slice(start, start + this.pageSize);
+      return this.unreadMessages.slice(start, start + this.pageSize);
     },
     // 分页后的已读消息数据
     readData() {

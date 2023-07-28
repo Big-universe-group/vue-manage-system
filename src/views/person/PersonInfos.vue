@@ -109,17 +109,26 @@
       <!-- c. 分页, el-pagination: 用于实现分页功能,
           background: 是否显示背景色
           layout: 分页布局，可以自定义显示的内容和顺序
+            + total: 总页数
+            + sizes: 每页格式选择
+            + prev, pager, next: 标准页面跳转
+            + jumper: 手动跳转
+
+          size-change: 每页的个数
           current-page: 当前页码
-          page-size: 每页显示的数据条数
           total: 总条数
+
+          page-size: 每页显示的数据条数, 注意page-size和page-sizes的不同
       -->
       <div class="pagination">
         <el-pagination
           background
-          layout="total, prev, pager, next"
-          :current-page="searchForm.pagenum"
-          :page-size="searchForm.pagesize"
+          layout="total, sizes, prev, pager, next, jumper"
           :total="pageTotal"
+          :page-sizes="[10, 50, 100]"
+          :page-size="searchForm.pagesize"
+          :current-page="searchForm.pagenum"
+          @size-change="handleSizeChange"
           @current-change="handlePageChange"></el-pagination>
       </div>
     </div>
@@ -371,6 +380,10 @@ export default {
     // 分页导航
     handlePageChange(val) {
       this.$set(this.searchForm, "pagenum", val);
+      this.getUserList();
+    },
+    handleSizeChange(pageSize) {
+      this.$set(this.searchForm, "pagesize", pageSize);
       this.getUserList();
     },
     // 监听switch开关状态的改变

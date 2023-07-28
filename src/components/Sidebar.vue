@@ -66,8 +66,18 @@ export default {
         },
         {
           icon: "el-icon-lx-copy",
-          index: "messages",
-          title: "系统消息",
+          index: "2",
+          title: "用户中心",
+          subs: [
+            {
+              index: "person",
+              title: "个人中心",
+            },
+            {
+              index: "messages",
+              title: "系统消息",
+            },
+          ],
         },
         {
           icon: "el-icon-lx-calendar",
