@@ -52,7 +52,7 @@
             :props="{ expandTrigger: 'hover' }"
             placeholder="请选择所在城市"
             v-model="param.cityInfo"
-            :options="provinceInfo"
+            :options="twoLevelProvinceInfo"
             @change="onCityChange"
             popper-class="my-el-cascader-register"
             class="custom-form-item"></el-cascader>
@@ -93,7 +93,6 @@ export default {
         city: "",
         province: "",
       },
-      provinceInfo,
       rules: {
         username: [{ required: true, message: "请输入用户名", trigger: "blur" }],
         password: [{ required: true, message: "请输入密码", trigger: "blur" }],
@@ -137,7 +136,7 @@ export default {
         this.param.city = "";
       } else {
         // 选择省和市
-        this.provinceInfo.map((item) => {
+        this.twoLevelProvinceInfo.map((item) => {
           if (item.value === this.param.cityInfo[0]) {
             this.param.province = item.label;
             item.children.map((subItem) => {
@@ -148,6 +147,24 @@ export default {
           }
         });
       }
+    },
+  },
+  computed: {
+    twoLevelProvinceInfo() {
+      return provinceInfo.map((province) => {
+        return {
+          value: province.value,
+          label: province.label,
+          children: province.children
+            ? province.children.map((city) => {
+                return {
+                  value: city.value,
+                  label: city.label,
+                };
+              })
+            : null,
+        };
+      });
     },
   },
 };

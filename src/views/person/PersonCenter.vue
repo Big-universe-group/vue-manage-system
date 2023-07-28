@@ -2,6 +2,7 @@
   <div>
     <div class="crumbs">
       <el-breadcrumb separator="/">
+        <el-breadcrumb-item :to="{ path: '/dashboard' }">首页</el-breadcrumb-item>
         <el-breadcrumb-item>
           <i class="el-icon-lx-redpacket_fill"></i>
           个人中心

@@ -5,7 +5,11 @@
         :default-active="onRoutes"：通过 onRoutes 属性绑定了默认激活的菜单项(active)
         active-text-color="#20a0ff"：设置激活菜单项的文本颜色为 #20a0ff
         unique-opened：设置菜单项的展开方式为唯一展开，即同时只能展开一个菜单项
-        router：开启路由模式，可以根据路由配置自动激活对应的菜单项
+
+    关于路由跳转:
+        el-menu: router：开启路由模式，可以根据路由配置自动激活对应的菜单项
+        el-menu-item: index, 用作to属性, 当用户点击菜单项时，应用会根据这个 to 属性值来进行路由跳转
+        onRoutes: 计算属性, 获取当前的路由路径，用于高亮显示当前的菜单项
     -->
     <el-menu
       class="sidebar-el-menu"
@@ -54,100 +58,78 @@ export default {
     return {
       collapse: false,
       items: [
-        {
-          icon: "el-icon-lx-home",
-          index: "dashboard",
-          title: "系统首页",
-        },
-        {
-          icon: "el-icon-lx-cascades",
-          index: "userinfos",
-          title: "用户列表",
-        },
+        { icon: "el-icon-lx-home", index: "dashboard", title: "系统首页" },
+        { icon: "el-icon-lx-cascades", index: "userinfos", title: "用户列表" },
         {
           icon: "el-icon-lx-copy",
-          index: "2",
+          index: "1",
           title: "用户中心",
           subs: [
-            {
-              index: "person",
-              title: "个人中心",
-            },
-            {
-              index: "messages",
-              title: "系统消息",
-            },
+            { index: "/user/person", title: "个人中心" },
+            { index: "/user/messages", title: "系统消息" },
           ],
+        },
+        {
+          icon: "el-icon-s-check",
+          index: "2",
+          title: "权限管理",
+          subs: [
+            { index: "/power/roles", title: "角色列表" },
+            { index: "/power/rights", title: "权限列表" },
+          ],
+        },
+        {
+          icon: "el-icon-s-goods",
+          index: "3",
+          title: "商品管理",
+          subs: [
+            { index: "/goods/list", title: "商品列表" },
+            { index: "/goods/params", title: "分类参数" },
+            { index: "/goods/categories", title: "商品分类" },
+          ],
+        },
+        {
+          icon: "el-icon-s-order",
+          index: "4",
+          title: "订单管理",
+          subs: [{ index: "orders", title: "订单列表" }],
         },
         {
           icon: "el-icon-lx-calendar",
-          index: "3",
+          index: "5",
           title: "表单相关",
           subs: [
+            { index: "form", title: "基本表单" },
             {
-              index: "form",
-              title: "基本表单",
-            },
-            {
-              index: "3-2",
+              index: "4-2",
               title: "三级菜单",
               subs: [
-                {
-                  index: "editor",
-                  title: "富文本编辑器",
-                },
-                {
-                  index: "markdown",
-                  title: "markdown编辑器",
-                },
+                { index: "editor", title: "富文本编辑器" },
+                { index: "markdown", title: "markdown编辑器" },
               ],
             },
-            {
-              index: "upload",
-              title: "文件上传",
-            },
+            { index: "upload", title: "文件上传" },
           ],
         },
-        {
-          icon: "el-icon-lx-emoji",
-          index: "icon",
-          title: "自定义图标",
-        },
-        {
-          icon: "el-icon-rank",
-          index: "task",
-          title: "工作流程",
-        },
-        {
-          icon: "el-icon-lx-global",
-          index: "i18n",
-          title: "国际化功能",
-        },
+        { icon: "el-icon-lx-emoji", index: "icon", title: "自定义图标" },
+        { icon: "el-icon-rank", index: "task", title: "工作流程" },
+        { icon: "el-icon-lx-global", index: "i18n", title: "国际化功能" },
         {
           icon: "el-icon-lx-warn",
           index: "7",
           title: "错误处理",
           subs: [
-            {
-              index: "permission",
-              title: "权限测试",
-            },
-            {
-              index: "404",
-              title: "404页面",
-            },
+            { index: "permission", title: "权限测试" },
+            { index: "404", title: "404页面" },
           ],
         },
-        {
-          icon: "el-icon-lx-redpacket_fill",
-          index: "/donate",
-          title: "支持作者",
-        },
+        { icon: "el-icon-lx-redpacket_fill", index: "/donate", title: "支持作者" },
       ],
     };
   },
   computed: {
     onRoutes() {
+      console.log(this.$route.path);
       return this.$route.path.replace("/", "");
     },
   },
