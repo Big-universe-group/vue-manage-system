@@ -50,19 +50,19 @@
 
         <el-table-column prop="id" label="ID" width="55" align="center"></el-table-column>
         <el-table-column prop="username" label="用户名"></el-table-column>
+        <el-table-column prop="nickname" label="昵称"></el-table-column>
         <el-table-column prop="email" label="邮箱"></el-table-column>
-        <el-table-column prop="mobile" label="电话"></el-table-column>
-        <el-table-column prop="address" label="地址"></el-table-column>
-        <el-table-column prop="role_name" label="角色"></el-table-column>
+        <el-table-column prop="address" label="详细地址"></el-table-column>
+        <el-table-column prop="roleinfo.name" label="角色"></el-table-column>
 
-        <!-- 通过slot-scope属性来获取当前行数据，并根据mg_state字段的值来展示不同类型的标签
+        <!-- 通过slot-scope属性来获取当前行数据，并根据confirmed字段的值来展示不同类型的标签
             success: 绿色
             danger: 红色
             其他
           <el-table-column label="状态" align="center">
             <template slot-scope="scope">
-              <el-tag :type="scope.row.mg_state === true ? 'success' : scope.row.state === false ? 'danger' : ''">
-                {{ scope.row.mg_state }}
+              <el-tag :type="scope.row.confirmed === true ? 'success' : scope.row.state === false ? 'danger' : ''">
+                {{ scope.row.confirmed }}
               </el-tag>
             </template>
           </el-table-column>
@@ -70,13 +70,13 @@
         <el-table-column label="状态" width="75">
           <!-- 作用域插槽 会覆盖prop -->
           <template slot-scope="scope">
-            <el-switch v-model="scope.row.mg_state" @change="userStateChange(scope.row)"></el-switch>
+            <el-switch v-model="scope.row.confirmed" @change="userStateChange(scope.row)"></el-switch>
           </template>
         </el-table-column>
 
-        <el-table-column prop="create_time" label="注册时间" :class-name="'person-date-column'">
+        <el-table-column prop="create_at" label="注册时间" :class-name="'person-date-column'">
           <template slot-scope="scope">
-            {{ scope.row.create_time | dateFormat }}
+            {{ scope.row.create_at }}
           </template>
         </el-table-column>
         <el-table-column label="操作" width="130" align="center">
@@ -136,16 +136,13 @@
     <!-- 3. 编辑弹出框, 注意el-form-item中的prop实际上和rules中的key对应 -->
     <el-dialog title="编辑" :visible.sync="editDialogVisible" width="30%">
       <el-form ref="editFormRef" :model="editForm" :rules="addFormRules" label-width="70px">
-        <el-form-item label="用户名" prop="username">
-          <el-input v-model="editForm.username"></el-input>
+        <el-form-item label="昵称" prop="nickname">
+          <el-input v-model="editForm.nickname"></el-input>
         </el-form-item>
-        <el-form-item label="邮箱" prop="email">
-          <el-input v-model="editForm.email"></el-input>
+        <el-form-item label="电话" prop="phone">
+          <el-input v-model="editForm.phone"></el-input>
         </el-form-item>
-        <el-form-item label="电话" prop="mobile">
-          <el-input v-model="editForm.mobile"></el-input>
-        </el-form-item>
-        <el-form-item label="地址" prop="address">
+        <el-form-item label="详细地址" prop="address">
           <el-input v-model="editForm.address"></el-input>
         </el-form-item>
       </el-form>
@@ -163,7 +160,7 @@
         <p>
           分配新角色：
           <el-select v-model="selectedRoleId" placeholder="请选择">
-            <el-option v-for="item in rolesList" :key="item.id" :label="item.roleName" :value="item.id"></el-option>
+            <el-option v-for="item in rolesList" :key="item.id" :label="item.name" :value="item.id"></el-option>
           </el-select>
         </p>
       </div>
@@ -197,7 +194,7 @@ export default {
         address: "",
         username: "",
         email: "",
-        mobile: "",
+        phone: "",
         pagenum: 1,
         pagesize: 10,
       },
@@ -247,8 +244,8 @@ export default {
             trigger: ["blur", "change"],
           },
         ],
-        mobile: [
-          { required: true, message: "请输入手机号", trigger: "blur" },
+        phone: [
+          { message: "请输入手机号", trigger: "blur" },
           { validator: checkMoblie, trigger: "blur" },
           // { type: 'mobliephone', message: '请输入正确的邮箱地址', trigger: ['blur', 'change'] }
         ],
@@ -263,21 +260,23 @@ export default {
     getUserList() {
       SimpleApi.fetchPersonInfos(this.searchForm).then((res) => {
         const { data: result } = res;
-        if (result.meta.status !== 200) {
-          return this.$message.error(result.meta.msg || "获取用户列表异常");
+        if (!SimpleApi.checkRequestResult(result, "获取用户列表异常")) {
+          return;
         }
-        this.personInfoList = result.data.users;
-        this.pageTotal = result.data.total || 0;
+        this.personInfoList = result.result;
+        this.pageTotal = result.pager.total || 0;
       });
     },
     // 展示分配角色的对话框
     async getEnableRoles(userInfo) {
       this.selectUserInfo = userInfo;
       // 在展示对话框之前获取所有角色的列表
-      const { data: result } = await this.$http.get("roles");
-      if (result.meta.status !== 200) return this.$message.error("获取角色列表失败！");
+      const { data: result } = await this.$http.get("auth/roles");
+      if (!SimpleApi.checkRequestResult(result, "获取角色列表失败！")) {
+        return;
+      }
       this.$message.success("获取角色列表成功！");
-      this.rolesList = result.data;
+      this.rolesList = result.result;
       this.setRoleDialogVisible = true;
     },
     // 监听分配角色对话框的关闭事件
@@ -290,11 +289,11 @@ export default {
       if (!this.selectedRoleId) {
         return this.$message.error("请选择一个角色！");
       }
-      const { data: result } = await this.$http.put(`users/${this.selectUserInfo.id}/role`, {
-        rid: this.selectedRoleId,
+      const { data: result } = await this.$http.put(`auth/users/${this.selectUserInfo.id}/role`, {
+        role_id: this.selectedRoleId,
       });
-      if (result.meta.status !== 200) {
-        return this.$message.error("更新角色失败！");
+      if (!SimpleApi.checkRequestResult(result, "更新角色失败！")) {
+        return;
       }
       this.$message.success("更新角色成功！");
       // 刷新当前角色列表
@@ -350,7 +349,8 @@ export default {
     // 编辑操作
     handleEdit(index, row) {
       this.idx = index;
-      this.editForm = row;
+      const { id, nickname, phone, address } = row;
+      this.editForm = { id, nickname, phone, address };
       this.editDialogVisible = true;
     },
     // 保存编辑
@@ -361,12 +361,9 @@ export default {
       this.$refs.editFormRef.validate(async (valid) => {
         if (!valid) return;
         // 发起修改用户信息的数据请求
-        const { data: result } = await this.$http.put("users/" + this.editForm.id, {
-          email: this.editForm.email,
-          mobile: this.editForm.mobile,
-        });
-        if (result.meta.status !== 200) {
-          return this.$message.error("更新用户失败");
+        const { data: result } = await this.$http.put("auth/users/" + this.editForm.id, this.editForm);
+        if (!SimpleApi.checkRequestResult(result, "更新用户失败")) {
+          return;
         }
         // 关闭对话框
         this.editDialogVisible = false;
@@ -389,10 +386,12 @@ export default {
     // 监听switch开关状态的改变
     async userStateChange(userinfo) {
       // 发送请求进行状态修改
-      const { data: result } = await this.$http.put(`users/${userinfo.id}/state/${userinfo.mg_state}`);
-      if (result.meta.status !== 200) {
-        userinfo.mg_state = !userinfo.mg_state;
-        return this.$message.error("更新用户状态失败");
+      const { data: result } = await this.$http.put(`auth/users/${userinfo.id}/state`, {
+        confirmed: userinfo.confirmed ? 1 : 0,
+      });
+      if (!SimpleApi.checkRequestResult(result, "更新用户状态失败")) {
+        userinfo.confirmed = !userinfo.confirmed;
+        return;
       }
       this.$message.success("更新用户状态成功");
     },

@@ -12,16 +12,12 @@
       </div>
       <el-form :model="loginForm" :rules="rules" ref="login" label-width="0px" class="ms-content">
         <el-form-item prop="username" class="custom-form-item">
-          <el-input v-model="loginForm.username" placeholder="username">
+          <el-input v-model="loginForm.username" placeholder="用户名">
             <!-- <el-button slot="prepend" icon="el-icon-lx-people"></el-button> -->
           </el-input>
         </el-form-item>
         <el-form-item prop="password" class="custom-form-item">
-          <el-input
-            type="password"
-            placeholder="password"
-            v-model="loginForm.password"
-            @keyup.enter.native="submitForm()">
+          <el-input type="password" placeholder="密码" v-model="loginForm.password" @keyup.enter.native="submitForm()">
             <!-- <el-button slot="prepend" icon="el-icon-lx-lock" /> -->
           </el-input>
           <div class="login-forget-passwd" @click="goToResetPwdPage">忘记密码</div>
@@ -29,7 +25,6 @@
         <div class="login-btn">
           <el-button type="primary" @click="submitForm()">登录</el-button>
         </div>
-        <p class="login-tips">Tips : 用户名和密码随便填。</p>
       </el-form>
     </div>
   </div>
@@ -45,8 +40,8 @@ export default {
   data: function () {
     return {
       loginForm: {
-        username: "admin",
-        password: "123456",
+        username: "",
+        password: "",
       },
       rules: {
         username: [{ required: true, message: "请输入用户名", trigger: "blur" }],
@@ -62,14 +57,15 @@ export default {
           console.log("error submit!!");
           return false;
         }
-        const { data: result } = await this.$http.post("login", this.loginForm);
-        if (result.meta.status !== 200) return this.$message.error("登录失败");
+        const { data: result } = await this.$http.post("auth/login", this.loginForm);
+        if (result.code !== 100000) return this.$message.error("登录失败");
 
         this.$message.success("登录成功");
         // 存储在local storage中
         localStorage.setItem("ms_username", this.loginForm.username);
+        localStorage.setItem("ms_id", this.loginForm.id);
         // 存储在session storage中
-        window.sessionStorage.setItem("token", result.data.token);
+        window.sessionStorage.setItem("token", result.result.token);
         this.$router.push("/");
         return true;
       });

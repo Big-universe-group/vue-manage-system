@@ -2,8 +2,9 @@ import axios from "axios";
 
 // 创建一个 Axios 实例，可以在这里配置默认的请求头、请求拦截器、响应拦截器等
 const service = axios.create({
-  baseURL: "http://127.0.0.1:8888/api/private/v1/", // 设置基础URL，根据实际情况进行更改
+  baseURL: "http://127.0.0.1:5000/api/v1/", // 设置基础URL，根据实际情况进行更改
   timeout: 5000, // 设置请求超时时间，单位为毫秒
+  withCredentials: true, // 设置跨域请求时是否需要使用凭证
 });
 
 // 请求拦截器

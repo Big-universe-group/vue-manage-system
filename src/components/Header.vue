@@ -25,7 +25,7 @@
                     用于在页面中创建可点击的导航链接
                 b. el-icon-bell 是 Element UI 提供的一个图标组件，用于显示一个钟形的图标
             -->
-            <router-link to="/messages">
+            <router-link to="/user/messages">
               <i class="el-icon-bell"></i>
             </router-link>
           </el-tooltip>
@@ -79,8 +79,8 @@ export default {
         localStorage.removeItem("ms_username");
         this.$router.push("/auth/login");
       } else if (command == "person") {
-        this.$router.push("/person");
-        // this.$route.path.replace("/person", "");
+        this.$router.push("/user/person");
+        // this.$route.path.replace("/user/person", "");
       }
     },
 

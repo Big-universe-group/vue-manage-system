@@ -10,32 +10,32 @@
           </el-button>
         </div>
       </div>
-      <el-form :model="param" :rules="rules" ref="register" label-width="0px" class="ms-content">
+      <el-form :model="registerForm" :rules="rules" ref="register" label-width="0px" class="ms-content">
         <el-form-item prop="username" class="custom-form-item">
-          <el-input v-model="param.username" placeholder="请输入用户名">
+          <el-input v-model="registerForm.username" placeholder="请输入用户名">
             <!-- <el-button slot="prepend" icon="el-icon-lx-people"></el-button> -->
           </el-input>
         </el-form-item>
 
         <el-form-item prop="email" class="custom-form-item">
-          <el-input v-model="param.email" placeholder="请输入邮箱">
+          <el-input v-model="registerForm.email" placeholder="请输入邮箱">
             <!-- <el-button slot="prepend" icon="el-icon-message"></el-button> -->
           </el-input>
         </el-form-item>
 
         <el-form-item prop="password" class="custom-form-item">
-          <el-input type="password" placeholder="请输入密码" v-model="param.password">
+          <el-input type="password" placeholder="请输入密码" v-model="registerForm.password">
             <!-- <el-button slot="prepend" icon="el-icon-lx-lock"></el-button> -->
           </el-input>
         </el-form-item>
         <el-form-item prop="confirmPassword" class="custom-form-item">
-          <el-input type="password" placeholder="请确认密码" v-model="param.confirmPassword">
+          <el-input type="password" placeholder="请确认密码" v-model="registerForm.confirmPassword">
             <!-- <el-button slot="prepend" icon="el-icon-lx-lock"></el-button> -->
           </el-input>
         </el-form-item>
 
         <el-form-item prop="age" class="custom-form-item">
-          <el-input v-model="param.age" placeholder="请输入年龄">
+          <el-input v-model="registerForm.age" placeholder="请输入年龄">
             <!-- <el-button slot="prepend" icon="el-icon-date"></el-button> -->
           </el-input>
         </el-form-item>
@@ -51,7 +51,7 @@
             filterable
             :props="{ expandTrigger: 'hover' }"
             placeholder="请选择所在城市"
-            v-model="param.cityInfo"
+            v-model="registerForm.cityInfo"
             :options="twoLevelProvinceInfo"
             @change="onCityChange"
             popper-class="my-el-cascader-register"
@@ -62,7 +62,7 @@
           <!-- Element-UI 的 el-select 使用的其实是 input 标签 , 
               而 input 标签在浏览器中存在一个默认的宽度 , 大约是 100px (不同的浏览器表现不同) . 
             -->
-          <el-select v-model="param.gender" placeholder="请选择性别" class="custom-form-item">
+          <el-select v-model="registerForm.gender" placeholder="请选择性别" class="custom-form-item">
             <el-option label="男" value="male" class="custom-el-select"></el-option>
             <el-option label="女" value="female" class="custom-el-select"></el-option>
           </el-select>
@@ -83,7 +83,7 @@ import provinceInfo from "@/data/province";
 export default {
   data: function () {
     return {
-      param: {
+      registerForm: {
         username: "",
         email: "",
         password: "",
@@ -100,7 +100,7 @@ export default {
           { required: true, message: "请确认密码", trigger: "blur" },
           {
             validator: (rule, value, callback) => {
-              if (value === this.param.password) {
+              if (value === this.registerForm.password) {
                 callback();
               } else {
                 callback(new Error("两次输入的密码不一致"));
@@ -114,14 +114,18 @@ export default {
   },
   methods: {
     submitForm() {
-      this.$refs.register.validate((valid) => {
-        if (valid) {
-          // 注册逻辑，可以在这里处理用户的注册信息
-          this.$message.success("注册成功");
-          this.$router.push("/auth/login"); // 注册成功后跳转到登录页
-        } else {
+      this.$refs.register.validate(async (valid) => {
+        if (!valid) {
           this.$message.error("请输入正确的账号和密码");
+          return false;
         }
+        const { data: result } = await this.$http.post("auth/register", this.registerForm);
+        if (result.code !== 100000) return this.$message.error("注册失败");
+
+        // 注册逻辑，可以在这里处理用户的注册信息
+        this.$message.success("注册成功");
+        this.$router.push("/auth/login"); // 注册成功后跳转到登录页
+        return true;
       });
     },
     /* 进入登录页面 */
@@ -130,18 +134,18 @@ export default {
     },
     // 注意, 这种回调函数报错, 在控制台中只可能看到如下错误: Error in v-on handler
     onCityChange() {
-      if (this.param.cityInfo.length < 2) {
+      if (this.registerForm.cityInfo.length < 2) {
         // 选择省信息
-        this.param.province = "";
-        this.param.city = "";
+        this.registerForm.province = "";
+        this.registerForm.city = "";
       } else {
         // 选择省和市
         this.twoLevelProvinceInfo.map((item) => {
-          if (item.value === this.param.cityInfo[0]) {
-            this.param.province = item.label;
+          if (item.value === this.registerForm.cityInfo[0]) {
+            this.registerForm.province = item.label;
             item.children.map((subItem) => {
-              if (subItem.value === this.param.cityInfo[1]) {
-                this.param.city = subItem.label;
+              if (subItem.value === this.registerForm.cityInfo[1]) {
+                this.registerForm.city = subItem.label;
               }
             });
           }
