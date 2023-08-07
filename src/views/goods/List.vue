@@ -25,7 +25,7 @@
         <el-table-column label="商品名称" prop="name"></el-table-column>
         <el-table-column label="商品价格(元)" prop="price" width="90px"></el-table-column>
         <el-table-column label="商品重量" prop="weight" width="70px"></el-table-column>
-        <el-table-column label="创建时间" prop="create_at" width="140px">
+        <el-table-column label="创建时间" prop="create_at" width="145px">
           <template slot-scope="scope">
             {{ scope.row.create_at | dateFormat }}
           </template>
@@ -47,7 +47,7 @@
         @size-change="handleSizeChange"
         @current-change="handleCurrentChange"
         :current-page="queryInfo.page"
-        :page-sizes="[5, 10, 15, 20]"
+        :page-sizes="[5, 10, 50, 100]"
         :page-size="queryInfo.pagesize"
         layout="total, sizes, prev, pager, next, jumper"
         :total="total"
@@ -119,7 +119,7 @@ export default {
         return;
       }
       this.$message.success("获取商品列表成功！");
-      this.goodsList = result.result;
+      this.goodsList = result.data;
       this.total = result.pager.total;
     },
     handleSizeChange(newSize) {

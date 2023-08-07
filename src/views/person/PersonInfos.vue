@@ -263,7 +263,7 @@ export default {
         if (!SimpleApi.checkRequestResult(this, result, "获取用户列表异常")) {
           return;
         }
-        this.personInfoList = result.result;
+        this.personInfoList = result.data;
         this.pageTotal = result.pager.total || 0;
       });
     },
@@ -276,7 +276,7 @@ export default {
         return;
       }
       this.$message.success("获取角色列表成功！");
-      this.rolesList = result.result;
+      this.rolesList = result.data;
       this.setRoleDialogVisible = true;
     },
     // 监听分配角色对话框的关闭事件

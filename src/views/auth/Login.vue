@@ -65,7 +65,7 @@ export default {
         localStorage.setItem("ms_username", this.loginForm.username);
         localStorage.setItem("ms_id", this.loginForm.id);
         // 存储在session storage中
-        window.sessionStorage.setItem("token", result.result.token);
+        window.sessionStorage.setItem("token", result.data.token);
         this.$router.push("/");
         return true;
       });

@@ -14,7 +14,16 @@
           <el-button type="primary" @click="showAddCatDialog">添加分类</el-button>
         </el-col>
       </el-row>
-      <!-- 表格区域 :data(设置数据源) :columns(设置表格中列配置信息) :selection-type(是否有复选框) :expand-type(是否展开数据) show-index(是否设置索引列) index-text(设置索引列头) border(是否添加纵向边框) :show-row-hover(是否鼠标悬停高亮) -->
+      <!-- 表格区域 
+          :data(设置数据源) 
+          :columns(设置表格中列配置信息) 
+          :selection-type(是否有复选框) 
+          :expand-type(是否展开数据) 
+          show-index(是否设置索引列) 
+          index-text(设置索引列头) 
+          border(是否添加纵向边框) 
+          :show-row-hover(是否鼠标悬停高亮)
+      -->
       <tree-table
         :data="cateList"
         :columns="columns"
@@ -100,6 +109,8 @@
 </template>
 
 <script>
+import SimpleApi from "@/api/simpleApi";
+
 export default {
   data() {
     return {
@@ -179,18 +190,14 @@ export default {
   methods: {
     // 获取商品分类数据
     async getCateList() {
-      const { data: result } = await this.$http.get("categories", {
+      const { data: result } = await this.$http.get("goods/categories", {
         params: this.queryInfo,
       });
-      if (result.meta.status !== 200) {
-        return this.$message.error("获取商品分类失败！");
+      if (!SimpleApi.checkRequestResult(this, result, "获取商品分类失败！")) {
+        return;
       }
-      // 把数据列表赋值给cateList
-      // console.log(result)
-      console.log(result.data);
       this.cateList = result.data.result;
       // 为总数据条数赋值
-      // console.log(result.total)
       this.total = result.data.total;
     },
     // 监听pagesize改变的事件
@@ -213,11 +220,11 @@ export default {
     },
     // 获取父级分类的数据列表
     async getParentCateList() {
-      const { data: result } = await this.$http.get("categories", {
+      const { data: result } = await this.$http.get("goods/categories", {
         params: { type: 2 },
       });
-      if (result.meta.status !== 200) {
-        return this.$message.error("获取父级分类数据失败！");
+      if (!SimpleApi.checkRequestResult(this, result, "获取父级分类数据失败！")) {
+        return;
       }
       this.parentCateList = result.data;
     },

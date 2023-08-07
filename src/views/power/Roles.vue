@@ -203,7 +203,7 @@ export default {
       if (!SimpleApi.checkRequestResult(this, result, "获取角色列表失败！")) {
         return;
       }
-      this.roleList = result.result;
+      this.roleList = result.data;
     },
 
     // 监听添加用户对话框的关闭事件
@@ -230,7 +230,7 @@ export default {
       if (!SimpleApi.checkRequestResult(this, result, "查询用户信息失败！")) {
         return;
       }
-      this.editForm = result.result;
+      this.editForm = result.data;
     },
     editUserInfo() {
       this.$refs.editFormRef.validate(async (valid) => {
@@ -293,7 +293,7 @@ export default {
         return;
       }
       this.$message.success("删除权限成功");
-      role.permission_infos = result.result.permission_infos;
+      role.permission_infos = result.data.permission_infos;
     },
 
     // 展示分配权限的对话框
@@ -305,7 +305,7 @@ export default {
         return;
       }
       // 获取到的权限数据保存到permissionInfoList中
-      this.permissionInfoList = result.result.infos;
+      this.permissionInfoList = result.data.infos;
       // 递归获取三级节点的id
       this.getLeafKeys(role, this.defKeys);
       this.setRightDialogVisible = true;

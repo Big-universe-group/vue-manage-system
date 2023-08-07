@@ -43,7 +43,7 @@ export default {
       if (!SimpleApi.checkRequestResult(this, result, "获取权限列表失败！")) {
         return;
       }
-      this.rightsList = result.result.infos;
+      this.rightsList = result.data.infos;
     },
   },
 };
