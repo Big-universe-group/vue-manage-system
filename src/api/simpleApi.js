@@ -6,7 +6,6 @@ const SimpleApi = {
    * 添加一个临时函数, 用于判断请求是否异常
    */
   checkRequestResult(vm, result, errormsg) {
-    console.log(result);
     if (!result || !result.code) {
       this.$message.error(errormsg || "响应数据为空, 请检查");
       return false;

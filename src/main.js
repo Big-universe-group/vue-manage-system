@@ -79,6 +79,10 @@ router.beforeEach((to, from, next) => {
 });
 
 Vue.filter("dateFormat", function (originVal) {
+  if (typeof originVal === "string") {
+    return originVal;
+  }
+
   const dt = new Date(originVal * 1000);
   const y = dt.getFullYear();
   const m = (dt.getMonth() + 1 + "").padStart(2, "0"); // 如果不是两位前面用0填充

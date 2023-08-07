@@ -128,13 +128,14 @@
           data: 数据
           props: 数据的格式指定
           default-checked-keys: 被选中的keys
+          default-expaned-all: 是否展开所有行, 其中false表示闭合
       -->
       <el-tree
         :data="permissionInfoList"
         :props="treeProps"
         show-checkbox
         node-key="id"
-        default-expand-all
+        :default-expand-all="false"
         :default-checked-keys="defKeys"
         ref="treeRef"></el-tree>
       <!-- 底部区域 -->
@@ -155,10 +156,7 @@ export default {
       // 所有角色列表数据
       roleList: [],
       addDialogVisible: false,
-      addForm: {
-        name: "",
-        desc: "",
-      },
+      addForm: { value: "", name: "", desc: "" },
       addFormRules: {
         value: [
           { required: true, message: "请输入角色值(英文字母)", trigger: "blur" },
@@ -302,7 +300,7 @@ export default {
     async showSetRightDialog(role) {
       this.roleId = role.id;
       // 获取所有权限数据
-      const { data: result } = await this.$http.get("auth/permissions");
+      const { data: result } = await this.$http.get("auth/permissions/tree");
       if (!SimpleApi.checkRequestResult(this, result, "获取权限数据失败！")) {
         return;
       }
