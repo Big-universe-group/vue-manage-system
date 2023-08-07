@@ -207,7 +207,7 @@ export default {
       SimpleApi.fetchTodoListInfos()
         .then((result) => {
           var _rspInfo = result.data;
-          if (!SimpleApi.checkRequestResult(_rspInfo, "获取todolist列表异常")) {
+          if (!SimpleApi.checkRequestResult(this, _rspInfo, "获取todolist列表异常")) {
             return;
           }
           this.todoList = _rspInfo.result;
@@ -231,7 +231,7 @@ export default {
       SimpleApi.fetchSalesData({ startDate, endDate })
         .then((result) => {
           var _rspInfo = result.data;
-          if (!SimpleApi.checkRequestResult(_rspInfo, "获取最近一周各品类销售数据异常")) {
+          if (!SimpleApi.checkRequestResult(this, _rspInfo, "获取最近一周各品类销售数据异常")) {
             return;
           }
           this.salesData = _rspInfo.result;
@@ -246,7 +246,7 @@ export default {
       SimpleApi.fetchStatisticsData()
         .then((result) => {
           var _rspInfo = result.data;
-          if (!SimpleApi.checkRequestResult(_rspInfo, "获取网站的统计信息异常")) {
+          if (!SimpleApi.checkRequestResult(this, _rspInfo, "获取网站的统计信息异常")) {
             return;
           }
           this.statisticsInfo = _rspInfo.result;

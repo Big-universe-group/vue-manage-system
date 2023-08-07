@@ -17,16 +17,16 @@
 
       <!-- 角色列表区域 -->
       <el-table :data="roleList" border stripe>
-        <!-- 展开列 -->
+        <!-- 展开列, 其中slot-scope="scope"表示即将访问当前行(整行)数据 -->
         <el-table-column type="expand">
           <template slot-scope="scope">
             <el-row
               :class="['bdbottom', index1 === 0 ? 'bdtop' : '', 'vcenter']"
-              v-for="(item1, index1) in scope.row.children"
+              v-for="(item1, index1) in scope.row.permission_infos"
               :key="item1.id">
               <!-- 渲染一级权限 -->
               <el-col :span="5">
-                <el-tag closable @close="removeRightById(scope.row, item1.id)">{{ item1.authName }}</el-tag>
+                <el-tag closable @close="removeRightById(scope.row, item1.id)">{{ item1.name }}</el-tag>
                 <i class="el-icon-caret-right"></i>
               </el-col>
               <!-- 渲染二级、三级权限 -->
@@ -38,7 +38,7 @@
                   <!-- 渲染二级权限 -->
                   <el-col :span="6">
                     <el-tag type="success" closable @close="removeRightById(scope.row, item2.id)">
-                      {{ item2.authName }}
+                      {{ item2.name }}
                     </el-tag>
                     <i class="el-icon-caret-right"></i>
                   </el-col>
@@ -50,27 +50,29 @@
                       :key="item3.id"
                       closable
                       @close="removeRightById(scope.row, item3.id)">
-                      {{ item3.authName }}
+                      {{ item3.name }}
                     </el-tag>
                   </el-col>
                 </el-row>
               </el-col>
             </el-row>
-            <!-- <pre>
-              {{scope.row}}
-            </pre> -->
           </template>
         </el-table-column>
         <!-- 索引列 -->
         <el-table-column type="index"></el-table-column>
-        <el-table-column label="角色名称" prop="roleName"></el-table-column>
-        <el-table-column label="角色描述" prop="roleDesc"></el-table-column>
+        <el-table-column label="角色名称" prop="name"></el-table-column>
+        <el-table-column label="角色描述" prop="desc"></el-table-column>
         <el-table-column label="操作" width="300px">
           <template slot-scope="scope">
             <el-button size="mini" type="primary" icon="el-icon-edit" @click="showEditDialog(scope.row.id)">
               编辑
             </el-button>
-            <el-button size="mini" type="danger" icon="el-icon-delete" @click="removeRoleById(scope.row.id)">
+            <el-button
+              size="mini"
+              type="danger"
+              icon="el-icon-delete"
+              :disabled="!scope.row.can_delete"
+              @click="removeRoleById(scope.row.id)">
               删除
             </el-button>
             <el-button size="mini" type="warning" icon="el-icon-setting" @click="showSetRightDialog(scope.row)">
@@ -85,11 +87,14 @@
     <el-dialog title="添加角色" :visible.sync="addDialogVisible" width="50%" @close="addDialogClosed">
       <!-- 内容主体区域 -->
       <el-form :model="addForm" :rules="addFormRules" ref="addFormRef" label-width="80px">
-        <el-form-item label="角色名称" prop="roleName">
-          <el-input v-model="addForm.roleName"></el-input>
+        <el-form-item label="角色值" prop="value">
+          <el-input v-model="addForm.value" placeholder="请输入角色值(英文字母)"></el-input>
         </el-form-item>
-        <el-form-item label="角色描述" prop="roleDesc">
-          <el-input v-model="addForm.roleDesc"></el-input>
+        <el-form-item label="角色名称" prop="name">
+          <el-input v-model="addForm.name" placeholder="请输入角色名称"></el-input>
+        </el-form-item>
+        <el-form-item label="角色描述" prop="desc">
+          <el-input v-model="addForm.desc" placeholder="请输入角色描述"></el-input>
         </el-form-item>
       </el-form>
       <!-- 底部区域 -->
@@ -103,11 +108,11 @@
     <el-dialog title="修改角色" :visible.sync="editDialogVisible" width="50%">
       <!-- 内容主体区域 -->
       <el-form :model="editForm" :rules="addFormRules" ref="editFormRef" label-width="80px">
-        <el-form-item label="角色名称" prop="roleName">
-          <el-input v-model="editForm.roleName"></el-input>
+        <el-form-item label="角色名称" prop="name">
+          <el-input v-model="editForm.name"></el-input>
         </el-form-item>
-        <el-form-item label="角色描述" prop="roleDesc">
-          <el-input v-model="editForm.roleDesc"></el-input>
+        <el-form-item label="角色描述" prop="desc">
+          <el-input v-model="editForm.desc"></el-input>
         </el-form-item>
       </el-form>
       <!-- 底部区域 -->
@@ -119,9 +124,13 @@
 
     <!-- 5. 分配权限的对话框 -->
     <el-dialog title="分配权限" :visible.sync="setRightDialogVisible" width="50%" @close="setRightDialogClosed">
-      <!-- 内容主体区域 树形控件-->
+      <!-- 内容主体区域 树形控件: 
+          data: 数据
+          props: 数据的格式指定
+          default-checked-keys: 被选中的keys
+      -->
       <el-tree
-        :data="rightslist"
+        :data="permissionInfoList"
         :props="treeProps"
         show-checkbox
         node-key="id"
@@ -138,6 +147,8 @@
 </template>
 
 <script>
+import SimpleApi from "@/api/simpleApi";
+
 export default {
   data() {
     return {
@@ -145,11 +156,16 @@ export default {
       roleList: [],
       addDialogVisible: false,
       addForm: {
-        roleName: "",
-        roleDesc: "",
+        name: "",
+        desc: "",
       },
       addFormRules: {
-        roleName: [{ required: true, message: "请输入角色名称", trigger: "blur" }],
+        value: [
+          { required: true, message: "请输入角色值(英文字母)", trigger: "blur" },
+          { validator: this.validateEnglishOnly, trigger: "blur" },
+        ],
+        name: [{ required: true, message: "请输入角色名称", trigger: "blur" }],
+        desc: [{ message: "请输入角色描述", trigger: "blur" }],
       },
       // 控制修改用户对话框的显示与隐藏
       editDialogVisible: false,
@@ -158,11 +174,11 @@ export default {
       // 控制分配权限对话框显示与隐藏
       setRightDialogVisible: false,
       // 所有权限数据
-      rightslist: [],
+      permissionInfoList: [],
       // 树形控件的属性绑定对象
       treeProps: {
         children: "children",
-        label: "authName",
+        label: "name",
       },
       // 默认选中的节点id值数组
       defKeys: [],
@@ -174,14 +190,22 @@ export default {
     this.getRolesList();
   },
   methods: {
+    // validator: 限制输入框只能输入英文
+    validateEnglishOnly(rule, value, callback) {
+      const englishLetterRegex = /^[A-Za-z]+$/;
+      if (!englishLetterRegex.test(value)) {
+        callback(new Error("角色值只能包含英文字母"));
+      } else {
+        callback();
+      }
+    },
     // 获取所有角色的列表
     async getRolesList() {
-      const { data: result } = await this.$http.get("roles");
-      if (result.meta.status !== 200) {
-        return this.$message.error("获取角色列表失败！");
+      const { data: result } = await this.$http.get("auth/roles");
+      if (!SimpleApi.checkRequestResult(this, result, "获取角色列表失败！")) {
+        return;
       }
-      this.roleList = result.data;
-      console.log(this.roleList);
+      this.roleList = result.result;
     },
 
     // 监听添加用户对话框的关闭事件
@@ -192,9 +216,9 @@ export default {
     addRole() {
       this.$refs.addFormRef.validate(async (valid) => {
         if (!valid) return;
-        const { data: result } = await this.$http.post("roles", this.addForm);
-        if (result.meta.status !== 201) {
-          return this.$message.error("添加角色失败！");
+        const { data: result } = await this.$http.post("auth/roles", this.addForm);
+        if (!SimpleApi.checkRequestResult(this, result, "添加角色失败！")) {
+          return;
         }
         this.$message.success("添加角色成功！");
         this.addDialogVisible = false;
@@ -205,10 +229,10 @@ export default {
     async showEditDialog(id) {
       this.editDialogVisible = true;
       const { data: result } = await this.$http.get("roles/" + id);
-      if (result.meta.status !== 200) {
-        return this.$message("查询用户信息失败！");
+      if (!SimpleApi.checkRequestResult(this, result, "查询用户信息失败！")) {
+        return;
       }
-      this.editForm = result.data;
+      this.editForm = result.result;
     },
     editUserInfo() {
       this.$refs.editFormRef.validate(async (valid) => {
@@ -216,11 +240,11 @@ export default {
         if (!valid) return;
         // 发起修改用户信息的数据请求
         const { data: result } = await this.$http.put("roles/" + this.editForm.roleId, {
-          roleName: this.editForm.roleName,
-          roleDesc: this.editForm.roleDesc,
+          name: this.editForm.name,
+          desc: this.editForm.desc,
         });
-        if (result.meta.status !== 200) {
-          return this.$message.error("更新角色失败");
+        if (!SimpleApi.checkRequestResult(this, result, "更新角色失败")) {
+          return;
         }
         // 关闭对话框
         this.editDialogVisible = false;
@@ -238,20 +262,24 @@ export default {
         cancelButtonText: "取消",
         type: "warning",
       }).catch((error) => error);
-      // console.log(confirmResult) // 确定：'confirm' 取消：报错:cancel catch之后就是'canel'
       if (confirmResult !== "confirm") {
         return this.$message.info("已经取消删除");
       }
-      const { data: result } = await this.$http.delete("roles/" + id);
-      if (result.meta.status !== 200) {
-        return this.$message.error("删除角色失败");
+
+      const { data: result } = await this.$http.delete("auth/roles/" + id);
+      if (!SimpleApi.checkRequestResult(this, result, "删除角色失败")) {
+        return;
       }
       this.$message.success("删除角色成功");
       this.getRolesList();
     },
-    // 根据Id删除对应的权限
-    async removeRightById(role, rightId) {
-      // 弹框提示用户是否删除数据
+
+    /*
+     * 功能: 根据Id删除对应的权限
+     * 使用: 在角色权限树中, 叉掉某个权限的时候会相应的调用该逻辑
+     */
+    async removeRightById(role, permissionId) {
+      // a. 弹框提示用户是否删除数据
       const confirmResult = await this.$confirm("此操作将永久删除该权限，是否继续？", "提示", {
         confirmButtonText: "确定",
         cancelButtonText: "取消",
@@ -260,47 +288,86 @@ export default {
       if (confirmResult !== "confirm") {
         return this.$message.info("已经取消删除");
       }
-      // console.log('确认了删除')
-      const { data: result } = await this.$http.delete("roles/" + role.id + "/rights/" + rightId);
-      if (result.meta.status !== 200) {
-        return this.$message.error("删除权限失败");
+
+      // b. 执行删除操作, 返回删除完成之后role的新值(role + permission)
+      const { data: result } = await this.$http.delete("auth/roles/" + role.id + "/permission/" + permissionId);
+      if (!SimpleApi.checkRequestResult(this, result, "删除权限失败！")) {
+        return;
       }
       this.$message.success("删除权限成功");
-      // this.getRolesList() // 会重新加载页面，不推荐使用
-      role.children = result.data;
+      role.permission_infos = result.result.permission_infos;
     },
+
     // 展示分配权限的对话框
     async showSetRightDialog(role) {
       this.roleId = role.id;
       // 获取所有权限数据
-      const { data: result } = await this.$http.get("rights/tree");
-      if (result.meta.status !== 200) return this.$message.error("获取权限数据失败");
-      // 获取到的权限数据保存到rightslist中
-      this.rightslist = result.data;
-      console.log(this.rightslist);
+      const { data: result } = await this.$http.get("auth/permissions");
+      if (!SimpleApi.checkRequestResult(this, result, "获取权限数据失败！")) {
+        return;
+      }
+      // 获取到的权限数据保存到permissionInfoList中
+      this.permissionInfoList = result.result.infos;
       // 递归获取三级节点的id
       this.getLeafKeys(role, this.defKeys);
       this.setRightDialogVisible = true;
     },
-    // 通过递归的形式，获取角色下所有三级权限的id，并保存到defKeys数组中
+
+    /*
+     * 通过递归的形式，获取角色下所有三级权限的id，并保存到defKeys数组中
+     * 注意: 该函数决定了属性列表的勾选项
+     */
     getLeafKeys(node, arr) {
       // 如果当前节点不包含children属性，则是三级权限节点
-      if (!node.children) {
+      if (!node.permission_infos) {
         return arr.push(node.id);
       }
-      node.children.forEach((item) => this.getLeafKeys(item, arr));
+      node.permission_infos.forEach((item) => this.getLeafKeys(item, arr));
     },
+
     // 监听分配权限对话框的关闭事件
     setRightDialogClosed() {
       this.defKeys = [];
     },
-    // 点击为角色分配权限
+
+    /*
+     * 功能: 根据已选择ID列表从给出的树中构建新树
+     */
+    buildSelectedPermissionTree(infos, selectKeys) {
+      let newTree = [];
+      for (let node of infos) {
+        if (selectKeys.includes(node.id)) {
+          // 将节点及其所有子节点添加到新树中
+          newTree.push(node);
+        } else if (node.children) {
+          // 递归地对子节点进行同样的操作
+          let filteredChildren = this.buildSelectedPermissionTree(node.children, selectKeys);
+          if (filteredChildren.length > 0) {
+            // 如果有被选中的子节点，将它们添加到新的父节点中
+            let newNode = { ...node };
+            newNode.children = filteredChildren;
+            newTree.push(newNode);
+          }
+        }
+      }
+      return newTree;
+    },
+
+    /*
+     * 功能: 根据全部权限树结构, 点击为角色分配需要权限
+     */
     async allotRights() {
       const keys = [...this.$refs.treeRef.getCheckedKeys(), ...this.$refs.treeRef.getHalfCheckedKeys()];
-      // console.log(keys)
+
+      var newPermissionInfos = this.buildSelectedPermissionTree(this.permissionInfoList, keys);
+
       const idStr = keys.join(",");
-      const { data: result } = await this.$http.post(`roles/${this.roleId}/rights`, { rids: idStr });
-      if (result.meta.status !== 200) return this.$message.error("分配权限失败！");
+      const { data: result } = await this.$http.put(`auth/roles/${this.roleId}`, {
+        permission_ids: newPermissionInfos,
+      });
+      if (!SimpleApi.checkRequestResult(this, result, "分配权限失败！")) {
+        return;
+      }
       this.$message.success("分配权限成功");
       this.getRolesList();
       this.setRightDialogVisible = false;

@@ -119,8 +119,12 @@ export default {
     };
   },
   computed: {
+    /*
+    这个default-active控制当前生效的页面, 这个非常重要, 若返回的值同route/index.js中不配对,
+    则不会生效.
+    */
     onRoutes() {
-      return this.$route.path.replace("/", "");
+      return this.$route.path;
     },
   },
   created() {
