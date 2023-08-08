@@ -61,7 +61,7 @@
       <el-pagination
         @size-change="handleSizeChange"
         @current-change="handleCurrentChange"
-        :current-page="queryInfo.pagenum"
+        :current-page="queryInfo.page"
         :page-sizes="[3, 5, 10, 15]"
         :page-size="queryInfo.pagesize"
         layout="total, sizes, prev, pager, next, jumper"
@@ -119,7 +119,7 @@ export default {
       // 查询条件
       queryInfo: {
         type: 3,
-        pagenum: 1,
+        page: 1,
         pagesize: 5,
       },
       // 商品分类的数据列表
@@ -208,9 +208,9 @@ export default {
       // 刷新数据
       this.getCateList();
     },
-    // 监听pagenum改变的事件
+    // 监听page改变的事件
     handleCurrentChange(newPage) {
-      this.queryInfo.pagenum = newPage;
+      this.queryInfo.page = newPage;
       this.getCateList();
     },
     // 点击按钮，显示对话框

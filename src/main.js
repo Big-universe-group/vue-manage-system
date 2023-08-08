@@ -3,6 +3,8 @@ import App from "./App.vue";
 import router from "./router";
 import ElementUI from "element-ui";
 import VueI18n from "vue-i18n";
+import TreeTable from "vue-table-with-tree-grid";
+
 import "element-ui/lib/theme-chalk/index.css"; // 默认主题
 
 import { messages } from "@/utils/i18n";
@@ -13,6 +15,8 @@ import "babel-polyfill";
 
 Vue.prototype.$http = axiosapi;
 Vue.config.productionTip = false;
+
+Vue.component("tree-table", TreeTable);
 Vue.use(VueI18n);
 Vue.use(ElementUI, {
   size: "small",
