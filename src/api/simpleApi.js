@@ -2,23 +2,6 @@ import axiosapi from "../utils/request";
 
 const SimpleApi = {
   /*
-   * 功能: 验证函数, 而非API
-   * 添加一个临时函数, 用于判断请求是否异常
-   */
-  checkRequestResult(vm, result, errormsg) {
-    if (!result || !result.code) {
-      this.$message.error(errormsg || "响应数据为空, 请检查");
-      return false;
-    }
-
-    if (result.code != 100000) {
-      vm.$message.error(result.message || errormsg);
-      return false;
-    }
-    return true;
-  },
-
-  /*
    * 功能: 获取个人信息列表
    */
   fetchPersonInfos(params) {

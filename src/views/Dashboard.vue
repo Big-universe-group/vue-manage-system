@@ -142,6 +142,7 @@
 import Schart from "vue-schart";
 
 import SimpleApi from "@/api/simpleApi";
+import requestMixin from "@/mixins/requestMixin";
 import CommonDateHandler from "@/utils/date";
 import bus from "@/store/bus";
 /*
@@ -149,6 +150,7 @@ import bus from "@/store/bus";
  */
 export default {
   name: "dashboard",
+  mixins: [requestMixin],
   data() {
     return {
       name: localStorage.getItem("ms_username"),
@@ -207,10 +209,10 @@ export default {
       SimpleApi.fetchTodoListInfos()
         .then((result) => {
           var _rspInfo = result.data;
-          if (!SimpleApi.checkRequestResult(this, _rspInfo, "获取todolist列表异常")) {
+          if (!this.checkRequestResult(_rspInfo, "获取todolist列表异常")) {
             return;
           }
-          this.todoList = _rspInfo.result;
+          this.todoList = _rspInfo.data;
         })
         .catch((error) => {
           console.log(error);
@@ -231,10 +233,10 @@ export default {
       SimpleApi.fetchSalesData({ startDate, endDate })
         .then((result) => {
           var _rspInfo = result.data;
-          if (!SimpleApi.checkRequestResult(this, _rspInfo, "获取最近一周各品类销售数据异常")) {
+          if (!this.checkRequestResult(_rspInfo, "获取最近一周各品类销售数据异常")) {
             return;
           }
-          this.salesData = _rspInfo.result;
+          this.salesData = _rspInfo.data;
         })
         .catch((error) => {
           console.log(error);
@@ -245,11 +247,12 @@ export default {
     getStatisticsInfo() {
       SimpleApi.fetchStatisticsData()
         .then((result) => {
+          console.log(result);
           var _rspInfo = result.data;
-          if (!SimpleApi.checkRequestResult(this, _rspInfo, "获取网站的统计信息异常")) {
+          if (!this.checkRequestResult(_rspInfo, "获取网站的统计信息异常")) {
             return;
           }
-          this.statisticsInfo = _rspInfo.result;
+          this.statisticsInfo = _rspInfo.data;
         })
         .catch((error) => {
           console.log(error);

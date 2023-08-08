@@ -110,8 +110,10 @@
 
 <script>
 import SimpleApi from "@/api/simpleApi";
+import requestMixin from "@/mixins/requestMixin";
 
 export default {
+  mixins: [requestMixin],
   data() {
     return {
       // 查询条件
@@ -193,7 +195,7 @@ export default {
       const { data: result } = await this.$http.get("goods/categories", {
         params: this.queryInfo,
       });
-      if (!SimpleApi.checkRequestResult(this, result, "获取商品分类失败！")) {
+      if (!this.checkRequestResult(result, "获取商品分类失败！")) {
         return;
       }
       this.cateList = result.data.result;
@@ -223,7 +225,7 @@ export default {
       const { data: result } = await this.$http.get("goods/categories", {
         params: { type: 2 },
       });
-      if (!SimpleApi.checkRequestResult(this, result, "获取父级分类数据失败！")) {
+      if (!this.checkRequestResult(result, "获取父级分类数据失败！")) {
         return;
       }
       this.parentCateList = result.data;
@@ -248,9 +250,9 @@ export default {
       // console.log(this.addCateForm)
       this.$refs.addCateFormRef.validate(async (valid) => {
         if (!valid) return this.$message.error("表单预校验失败！");
-        const { data: result } = await this.$http.post("categories", this.addCateForm);
-        if (result.meta.status !== 201) {
-          return this.$message.error("添加分类失败！");
+        const { data: result } = await this.$http.post("goods/categories", this.addCateForm);
+        if (!this.checkRequestResult(result, "添加分类失败！")) {
+          return;
         }
         this.$message.success("添加分类成功");
         // 刷新列表
@@ -269,9 +271,9 @@ export default {
     // 展示编辑分类名称的对话框
     async showEditDialog(id) {
       this.editDialogVisible = true;
-      const { data: result } = await this.$http.get(`categories/${id}`);
-      if (result.meta.status !== 200) {
-        return this.$message.error("查询分类数据失败！");
+      const { data: result } = await this.$http.get(`goods/categories/${id}`);
+      if (!this.checkRequestResult(result, "查询分类数据失败！")) {
+        return;
       }
       console.log(result.data);
       this.editCateForm = result.data;
@@ -285,10 +287,12 @@ export default {
       this.$refs.editCateFormRef.validate(async (valid) => {
         if (!valid) return;
         // 发起修改分类名称的数据请求
-        const { data: result } = await this.$http.put(`categories/${this.editCateForm.cat_id}`, {
+        const { data: result } = await this.$http.put(`goods/categories/${this.editCateForm.cat_id}`, {
           cat_name: this.editCateForm.cat_name,
         });
-        if (result.meta.status !== 200) return this.$message.error("更新分类名称失败！");
+        if (!this.checkRequestResult(result, "更新分类名称失败！")) {
+          return;
+        }
         // 关闭对话框
         this.editDialogVisible = false;
         // 重新获取用户列表
@@ -308,9 +312,9 @@ export default {
       if (confirmResult !== "confirm") {
         return this.$message.info("已经取消删除");
       }
-      const { data: result } = await this.$http.delete("categories/" + id);
-      if (result.meta.status !== 200) {
-        return this.$message.error("删除分类失败");
+      const { data: result } = await this.$http.delete("goods/categories/" + id);
+      if (!this.checkRequestResult(result, "删除分类失败")) {
+        return;
       }
       this.$message.success("删除分类成功");
       this.getCateList();

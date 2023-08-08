@@ -82,7 +82,10 @@
 
 <script>
 import SimpleApi from "@/api/simpleApi";
+import requestMixin from "@/mixins/requestMixin";
+
 export default {
+  mixins: [requestMixin],
   data() {
     return {
       // 查询参数对象
@@ -115,7 +118,7 @@ export default {
       const { data: result } = await this.$http.get("goods", {
         params: this.queryInfo,
       });
-      if (!SimpleApi.checkRequestResult(this, result, "获取商品列表失败！")) {
+      if (!this.checkRequestResult(result, "获取商品列表失败！")) {
         return;
       }
       this.$message.success("获取商品列表成功！");
@@ -140,7 +143,7 @@ export default {
         return this.$message.info("已取消删除！");
       }
       const { data: result } = await this.$http.delete(`goods/${id}`);
-      if (!SimpleApi.checkRequestResult(this, result, "删除失败！")) {
+      if (!this.checkRequestResult(result, "删除失败！")) {
         return;
       }
       this.$message.success("删除成功！");
@@ -157,7 +160,7 @@ export default {
         if (!valid) return;
 
         const { data: result } = await this.$http.put("goods/" + this.editGoodsForm.id, this.editGoodsForm);
-        if (!SimpleApi.checkRequestResult(this, result, "更新商品信息失败")) {
+        if (!this.checkRequestResult(result, "更新商品信息失败")) {
           return;
         }
         // 关闭对话框

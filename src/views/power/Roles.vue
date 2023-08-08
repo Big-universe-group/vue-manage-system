@@ -149,8 +149,10 @@
 
 <script>
 import SimpleApi from "@/api/simpleApi";
+import requestMixin from "@/mixins/requestMixin";
 
 export default {
+  mixins: [requestMixin],
   data() {
     return {
       // 所有角色列表数据
@@ -200,7 +202,7 @@ export default {
     // 获取所有角色的列表
     async getRolesList() {
       const { data: result } = await this.$http.get("auth/roles");
-      if (!SimpleApi.checkRequestResult(this, result, "获取角色列表失败！")) {
+      if (!this.checkRequestResult(result, "获取角色列表失败！")) {
         return;
       }
       this.roleList = result.data;
@@ -215,7 +217,7 @@ export default {
       this.$refs.addFormRef.validate(async (valid) => {
         if (!valid) return;
         const { data: result } = await this.$http.post("auth/roles", this.addForm);
-        if (!SimpleApi.checkRequestResult(this, result, "添加角色失败！")) {
+        if (!this.checkRequestResult(result, "添加角色失败！")) {
           return;
         }
         this.$message.success("添加角色成功！");
@@ -227,7 +229,7 @@ export default {
     async showEditDialog(id) {
       this.editDialogVisible = true;
       const { data: result } = await this.$http.get("roles/" + id);
-      if (!SimpleApi.checkRequestResult(this, result, "查询用户信息失败！")) {
+      if (!this.checkRequestResult(result, "查询用户信息失败！")) {
         return;
       }
       this.editForm = result.data;
@@ -241,7 +243,7 @@ export default {
           name: this.editForm.name,
           desc: this.editForm.desc,
         });
-        if (!SimpleApi.checkRequestResult(this, result, "更新角色失败")) {
+        if (!this.checkRequestResult(result, "更新角色失败")) {
           return;
         }
         // 关闭对话框
@@ -265,7 +267,7 @@ export default {
       }
 
       const { data: result } = await this.$http.delete("auth/roles/" + id);
-      if (!SimpleApi.checkRequestResult(this, result, "删除角色失败")) {
+      if (!this.checkRequestResult(result, "删除角色失败")) {
         return;
       }
       this.$message.success("删除角色成功");
@@ -289,7 +291,7 @@ export default {
 
       // b. 执行删除操作, 返回删除完成之后role的新值(role + permission)
       const { data: result } = await this.$http.delete("auth/roles/" + role.id + "/permission/" + permissionId);
-      if (!SimpleApi.checkRequestResult(this, result, "删除权限失败！")) {
+      if (!this.checkRequestResult(result, "删除权限失败！")) {
         return;
       }
       this.$message.success("删除权限成功");
@@ -301,7 +303,7 @@ export default {
       this.roleId = role.id;
       // 获取所有权限数据
       const { data: result } = await this.$http.get("auth/permissions/tree");
-      if (!SimpleApi.checkRequestResult(this, result, "获取权限数据失败！")) {
+      if (!this.checkRequestResult(result, "获取权限数据失败！")) {
         return;
       }
       // 获取到的权限数据保存到permissionInfoList中
@@ -363,7 +365,7 @@ export default {
       const { data: result } = await this.$http.put(`auth/roles/${this.roleId}`, {
         permission_ids: newPermissionInfos,
       });
-      if (!SimpleApi.checkRequestResult(this, result, "分配权限失败！")) {
+      if (!this.checkRequestResult(result, "分配权限失败！")) {
         return;
       }
       this.$message.success("分配权限成功");

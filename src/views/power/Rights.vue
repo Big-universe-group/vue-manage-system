@@ -25,8 +25,10 @@
 
 <script>
 import SimpleApi from "@/api/simpleApi";
+import requestMixin from "@/mixins/requestMixin";
 
 export default {
+  mixins: [requestMixin],
   data() {
     return {
       // 权限列表
@@ -40,7 +42,7 @@ export default {
   methods: {
     async getRightsList() {
       const { data: result } = await this.$http.get("auth/permissions");
-      if (!SimpleApi.checkRequestResult(this, result, "获取权限列表失败！")) {
+      if (!this.checkRequestResult(result, "获取权限列表失败！")) {
         return;
       }
       this.rightsList = result.data.infos;

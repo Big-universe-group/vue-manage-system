@@ -175,8 +175,11 @@
 
 <script>
 import SimpleApi from "@/api/simpleApi";
+import requestMixin from "@/mixins/requestMixin";
+
 export default {
   name: "basetable",
+  mixins: [requestMixin],
   data() {
     // 验证手机号的规则
     var checkMoblie = (rule, value, callback) => {
@@ -260,7 +263,7 @@ export default {
     getUserList() {
       SimpleApi.fetchPersonInfos(this.searchForm).then((res) => {
         const { data: result } = res;
-        if (!SimpleApi.checkRequestResult(this, result, "获取用户列表异常")) {
+        if (!this.checkRequestResult(result, "获取用户列表异常")) {
           return;
         }
         this.personInfoList = result.data;
@@ -272,7 +275,7 @@ export default {
       this.selectUserInfo = userInfo;
       // 在展示对话框之前获取所有角色的列表
       const { data: result } = await this.$http.get("auth/roles");
-      if (!SimpleApi.checkRequestResult(this, result, "获取角色列表失败！")) {
+      if (!this.checkRequestResult(result, "获取角色列表失败！")) {
         return;
       }
       this.$message.success("获取角色列表成功！");
@@ -292,7 +295,7 @@ export default {
       const { data: result } = await this.$http.put(`auth/users/${this.selectUserInfo.id}/role`, {
         role_id: this.selectedRoleId,
       });
-      if (!SimpleApi.checkRequestResult(this, result, "更新角色失败！")) {
+      if (!this.checkRequestResult(result, "更新角色失败！")) {
         return;
       }
       this.$message.success("更新角色成功！");
@@ -362,7 +365,7 @@ export default {
         if (!valid) return;
         // 发起修改用户信息的数据请求
         const { data: result } = await this.$http.put("auth/users/" + this.editForm.id, this.editForm);
-        if (!SimpleApi.checkRequestResult(this, result, "更新用户失败")) {
+        if (!this.checkRequestResult(result, "更新用户失败")) {
           return;
         }
         // 关闭对话框
@@ -389,7 +392,7 @@ export default {
       const { data: result } = await this.$http.put(`auth/users/${userinfo.id}/state`, {
         confirmed: userinfo.confirmed ? 1 : 0,
       });
-      if (!SimpleApi.checkRequestResult(this, result, "更新用户状态失败")) {
+      if (!this.checkRequestResult(result, "更新用户状态失败")) {
         userinfo.confirmed = !userinfo.confirmed;
         return;
       }
