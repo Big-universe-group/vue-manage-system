@@ -175,20 +175,12 @@
 <script>
 import SimpleApi from "@/api/simpleApi";
 import requestMixin from "@/mixins/requestMixin";
+import categoryMixin from "@/mixins/categoryMixin";
 
 export default {
-  mixins: [requestMixin],
+  mixins: [requestMixin, categoryMixin],
   data() {
     return {
-      // 商品分类列表
-      cateList: [],
-      // 指定级联选择器的配置对象
-      casteProps: {
-        expandTrigger: "hover",
-        value: "id",
-        label: "name",
-        children: "children",
-      },
       // 级联选择框双向绑定到的数组
       selectedCateKeys: [],
       // 被激活的页签名称
@@ -219,17 +211,9 @@ export default {
     };
   },
   created() {
-    this.getCateList();
+    this.getCateSimpleList();
   },
   methods: {
-    // 获取所有的商品分类列表
-    async getCateList() {
-      const { data: result } = await this.$http.get("goods/categories");
-      if (!this.checkRequestResult(result, "获取商品分类列表失败！")) {
-        return;
-      }
-      this.cateList = result.data.infos;
-    },
     // 级联选择框选中项变化会触发这个函数
     handleChange() {
       this.getParamsData();
@@ -240,16 +224,13 @@ export default {
     },
     // 获取参数的列表数据
     async getParamsData() {
-      // console.log(this.selectedCateKeys)
       // 选中的不是三级分类，就重置数组
       if (this.selectedCateKeys.length !== 3) {
         this.selectedCateKeys = [];
         this.manyTableData = [];
         this.onlyTableData = [];
       }
-      // 选中的是三级分类
-      // console.log(this.selectedCateKeys)
-      // 根据所选分类的id和当前所处的面板，获取对应的参数
+      // 选中的是三级分类, 根据所选分类的id和当前所处的面板，获取对应的参数
       const { data: result } = await this.$http.get(`goods/categories/${this.cateId}/attributes`, {
         params: { select: this.activeName },
       });

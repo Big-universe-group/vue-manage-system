@@ -7,14 +7,8 @@
       <el-breadcrumb-item>商品分类</el-breadcrumb-item>
     </el-breadcrumb>
 
-    <!-- 卡片视图区域 -->
-    <el-card>
-      <el-row>
-        <el-col>
-          <el-button type="primary" @click="showAddCatDialog">添加分类</el-button>
-        </el-col>
-      </el-row>
-      <!-- 表格区域 
+    <!-- 卡片视图区域
+      tree-table表格区域 
           :data(设置数据源) 
           :columns(设置表格中列配置信息) 
           :selection-type(是否有复选框) 
@@ -23,7 +17,13 @@
           index-text(设置索引列头) 
           border(是否添加纵向边框) 
           :show-row-hover(是否鼠标悬停高亮)
-      -->
+    -->
+    <el-card>
+      <el-row>
+        <el-col>
+          <el-button type="primary" @click="showAddCatDialog">添加分类</el-button>
+        </el-col>
+      </el-row>
       <tree-table
         :data="cateList"
         :columns="columns"
@@ -35,23 +35,23 @@
         class="treetable">
         <!-- 是否有效 -->
         <template slot="isok" slot-scope="scope">
-          <i class="el-icon-success" v-if="scope.row.cat_deleted === false" style="color: lightgreen"></i>
+          <i class="el-icon-success" v-if="scope.row.deleted === false" style="color: lightgreen"></i>
           <i class="el-icon-error" v-else style="color: red"></i>
         </template>
 
-        <!-- 排序 -->
+        <!-- 级别 -->
         <template slot="order" slot-scope="scope">
-          <el-tag size="mini" v-if="scope.row.cat_level === 0">一级</el-tag>
-          <el-tag type="success" size="mini" v-else-if="scope.row.cat_level === 1">二级</el-tag>
+          <el-tag size="mini" v-if="scope.row.level === 0">一级</el-tag>
+          <el-tag type="success" size="mini" v-else-if="scope.row.level === 1">二级</el-tag>
           <el-tag type="warning" size="mini" v-else>三级</el-tag>
         </template>
 
         <!-- 操作 -->
         <template slot="opt" slot-scope="scope">
-          <el-button type="primary" icon="el-icon-edit" size="mini" @click="showEditDialog(scope.row.cat_id)">
+          <el-button type="primary" icon="el-icon-edit" size="mini" @click="showEditDialog(scope.row.id)">
             编辑
           </el-button>
-          <el-button type="danger" icon="el-icon-delete" size="mini" @click="removeCateById(scope.row.cat_id)">
+          <el-button type="danger" icon="el-icon-delete" size="mini" @click="removeCateById(scope.row.id)">
             删除
           </el-button>
         </template>
@@ -62,7 +62,7 @@
         @size-change="handleSizeChange"
         @current-change="handleCurrentChange"
         :current-page="queryInfo.page"
-        :page-sizes="[3, 5, 10, 15]"
+        :page-sizes="[5, 10, 20]"
         :page-size="queryInfo.pagesize"
         layout="total, sizes, prev, pager, next, jumper"
         :total="total"></el-pagination>
@@ -72,8 +72,8 @@
     <el-dialog title="添加分类" :visible.sync="addCateDialogVisible" width="50%" @close="addCateDialogClosed">
       <!-- 添加分类的表单 -->
       <el-form :model="addCateForm" :rules="addCateFormRules" ref="addCateFormRef" label-width="100px">
-        <el-form-item label="分类名称：" prop="cat_name">
-          <el-input v-model="addCateForm.cat_name"></el-input>
+        <el-form-item label="分类名称：" prop="name">
+          <el-input v-model="addCateForm.name"></el-input>
         </el-form-item>
         <el-form-item label="父级分类：">
           <el-cascader
@@ -81,8 +81,7 @@
             :options="parentCateList"
             :props="cascaderProps"
             @change="parentCateChanged"
-            clearable
-            change-on-select></el-cascader>
+            clearable></el-cascader>
         </el-form-item>
       </el-form>
       <span slot="footer" class="dialog-footer">
@@ -95,8 +94,8 @@
     <el-dialog title="修改分类" :visible.sync="editDialogVisible" width="50%" @close="editDialogClosed">
       <!-- 内容主体区域 -->
       <el-form :model="editCateForm" :rules="addCateFormRules" ref="editCateFormRef" label-width="100px">
-        <el-form-item label="分类名称：" prop="cat_name">
-          <el-input v-model="editCateForm.cat_name"></el-input>
+        <el-form-item label="分类名称：" prop="name">
+          <el-input v-model="editCateForm.name"></el-input>
         </el-form-item>
       </el-form>
       <!-- 底部区域 -->
@@ -111,78 +110,57 @@
 <script>
 import SimpleApi from "@/api/simpleApi";
 import requestMixin from "@/mixins/requestMixin";
+import categoryMixin from "@/mixins/categoryMixin";
 
 export default {
-  mixins: [requestMixin],
+  mixins: [requestMixin, categoryMixin],
   data() {
     return {
+      total: 0, // 总数据条数
       // 查询条件
       queryInfo: {
-        type: 3,
+        level: 3, // 表示获取的最大层级
         page: 1,
         pagesize: 5,
       },
-      // 商品分类的数据列表
-      cateList: [],
-      // 总数据条数
-      total: 0,
+
       // 为table指定列的定义，在数据中添加columns
       columns: [
         {
           label: "分类名称",
-          prop: "cat_name", // 对应列内容的属性名称
+          prop: "name", // 对应列内容的属性名称
         },
         {
           label: "是否有效",
-          // 表示将当前列定义为模板列
-          type: "template",
-          // 表示当前这一列使用模板名称
-          template: "isok",
+          type: "template", // 表示将当前列定义为模板列
+          template: "isok", // 表示当前这一列使用模板名称
         },
         {
-          label: "排序",
-          // 表示将当前列定义为模板列
+          label: "等级",
           type: "template",
-          // 表示当前这一列使用模板名称
           template: "order",
         },
         {
           label: "操作",
-          // 表示将当前列定义为模板列
           type: "template",
-          // 表示当前这一列使用模板名称
           template: "opt",
         },
       ],
-      // 控制添加分类对话框的显示与隐藏
-      addCateDialogVisible: false,
+
+      addCateDialogVisible: false, // 控制添加分类对话框的显示与隐藏
       // 添加分类的表单数据对象
       addCateForm: {
-        // 将要添加分类的名称
-        cat_name: "",
-        // 父级分类的id
-        cat_pid: 0,
-        // 分类的等级，默认添加的是一级分类
-        cat_level: 0,
+        name: "", // 将要添加分类的名称
+        pid: 0, // 父级分类的id
+        level: 0, // 分类的等级，默认添加的是一级分类
       },
       // 添加分类表单的验证规则对象
       addCateFormRules: {
-        cat_name: [{ required: true, message: "请输入分类名称", trigger: "blur" }],
+        name: [{ required: true, message: "请输入分类名称", trigger: "blur" }],
       },
-      // 父级分类的列表
-      parentCateList: [],
-      // 指定级联选择器的配置对象
-      cascaderProps: {
-        expandTrigger: "hover",
-        value: "cat_id",
-        label: "cat_name",
-        children: "children",
-        checkStrictly: true,
-      },
-      // 选中的父级分类的id数组
-      selectedKeys: [],
-      // 控制修改分类名称对话框的显示与隐藏
-      editDialogVisible: false,
+      parentCateList: [], // 父级分类的列表
+      selectedKeys: [], // 选中的父级分类的id数组
+      editDialogVisible: false, // 控制修改分类名称对话框的显示与隐藏
       editCateForm: {},
     };
   },
@@ -198,15 +176,14 @@ export default {
       if (!this.checkRequestResult(result, "获取商品分类失败！")) {
         return;
       }
-      this.cateList = result.data.result;
+      this.cateList = result.data;
       // 为总数据条数赋值
-      this.total = result.data.total;
+      this.total = result.pager.total;
     },
     // 监听pagesize改变的事件
     handleSizeChange(newSize) {
       this.queryInfo.pagesize = newSize;
-      // 刷新数据
-      this.getCateList();
+      this.getCateList(); // 刷新数据
     },
     // 监听page改变的事件
     handleCurrentChange(newPage) {
@@ -220,34 +197,33 @@ export default {
       // 再展示对话框
       this.addCateDialogVisible = true;
     },
-    // 获取父级分类的数据列表
+    // 获取父级(2级)分类的数据列表
     async getParentCateList() {
-      const { data: result } = await this.$http.get("goods/categories", {
-        params: { type: 2 },
+      const { data: result } = await this.$http.get("goods/categories/simpleinfo", {
+        params: { level: 2 },
       });
       if (!this.checkRequestResult(result, "获取父级分类数据失败！")) {
         return;
       }
-      this.parentCateList = result.data;
+      this.parentCateList = result.data.infos;
     },
-    // 选择项发生变化触发
+    /*
+     * 功能: 选择项发生变化触发
+     *  selectKeys数组长度:
+     *    + >0，证明选中的父级分类
+     *    + =0, 说明没有选中任何父级分类
+     */
     parentCateChanged() {
-      // console.log(this.selectedKeys)
-      // 如果selectedKeys数组中的length大于0，证明选中的父级分类
       if (this.selectedKeys.length > 0) {
-        // 父级分类的id
-        this.addCateForm.cat_pid = this.selectedKeys[this.selectedKeys.length - 1];
-        // 为当前分类的等级赋值
-        this.addCateForm.cat_level = this.selectedKeys.length;
+        this.addCateForm.pid = this.selectedKeys[this.selectedKeys.length - 1];
+        this.addCateForm.level = this.selectedKeys.length;
       } else {
-        // 反之，就说明没有选中任何父级分类
-        this.addCateForm.cat_pid = 0;
-        this.addCateForm.cat_level = 0;
+        this.addCateForm.pid = 0;
+        this.addCateForm.level = 0;
       }
     },
     // 点击确定按钮添加新的分类
     addCate() {
-      // console.log(this.addCateForm)
       this.$refs.addCateFormRef.validate(async (valid) => {
         if (!valid) return this.$message.error("表单预校验失败！");
         const { data: result } = await this.$http.post("goods/categories", this.addCateForm);
@@ -265,8 +241,8 @@ export default {
     addCateDialogClosed() {
       this.$refs.addCateFormRef.resetFields();
       this.selectedKeys = [];
-      this.addCateForm.cat_level = 0;
-      this.addCateForm.cat_pid = 0;
+      this.addCateForm.level = 0;
+      this.addCateForm.pid = 0;
     },
     // 展示编辑分类名称的对话框
     async showEditDialog(id) {
@@ -287,8 +263,8 @@ export default {
       this.$refs.editCateFormRef.validate(async (valid) => {
         if (!valid) return;
         // 发起修改分类名称的数据请求
-        const { data: result } = await this.$http.put(`goods/categories/${this.editCateForm.cat_id}`, {
-          cat_name: this.editCateForm.cat_name,
+        const { data: result } = await this.$http.put(`goods/categories/${this.editCateForm.id}`, {
+          name: this.editCateForm.name,
         });
         if (!this.checkRequestResult(result, "更新分类名称失败！")) {
           return;
@@ -308,7 +284,6 @@ export default {
         cancelButtonText: "取消",
         type: "warning",
       }).catch((error) => error);
-      // console.log(confirmResult) // 确定：'confirm' 取消：报错:cancel catch之后就是'canel'
       if (confirmResult !== "confirm") {
         return this.$message.info("已经取消删除");
       }

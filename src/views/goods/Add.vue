@@ -23,23 +23,23 @@
       <el-form :model="addForm" :rules="addFormRules" ref="addFormRef" label-width="100px" label-position="top">
         <el-tabs :tab-position="'left'" v-model="activeIndex" :before-leave="beforeTabLeave" @tab-click="tabClicked">
           <el-tab-pane label="基本信息" name="0">
-            <el-form-item label="商品名称" prop="goods_name">
-              <el-input v-model="addForm.goods_name"></el-input>
+            <el-form-item label="商品名称" prop="name">
+              <el-input v-model="addForm.name"></el-input>
             </el-form-item>
-            <el-form-item label="商品价格" prop="goods_price">
-              <el-input v-model="addForm.goods_price" type="number"></el-input>
+            <el-form-item label="商品价格" prop="price">
+              <el-input v-model="addForm.price" type="number"></el-input>
             </el-form-item>
-            <el-form-item label="商品重量" prop="goods_weight">
-              <el-input v-model="addForm.goods_weight" type="number"></el-input>
+            <el-form-item label="商品重量" prop="weight">
+              <el-input v-model="addForm.weight" type="number"></el-input>
             </el-form-item>
-            <el-form-item label="商品数量" prop="goods_number">
-              <el-input v-model="addForm.goods_number" type="number"></el-input>
+            <el-form-item label="商品数量" prop="number">
+              <el-input v-model="addForm.number" type="number"></el-input>
             </el-form-item>
-            <el-form-item label="商品分类" prop="goods_cat">
+            <el-form-item label="商品分类" prop="categories">
               <el-cascader
-                v-model="addForm.goods_cat"
+                v-model="addForm.categories"
                 :options="cateList"
-                :props="cateProps"
+                :props="casteProps"
                 @change="handleChange"></el-cascader>
             </el-form-item>
           </el-tab-pane>
@@ -86,17 +86,21 @@
 
 <script>
 import _ from "lodash";
+import requestMixin from "@/mixins/requestMixin";
+import categoryMixin from "@/mixins/categoryMixin";
+
 export default {
+  mixins: [requestMixin, categoryMixin],
   data() {
     return {
       activeIndex: "0",
       addForm: {
-        goods_name: "",
-        goods_price: 0,
-        goods_weight: 0,
-        goods_number: 0,
+        name: "",
+        price: 0,
+        weight: 0,
+        number: 0,
         // 商品所属的分类数组
-        goods_cat: [],
+        categories: [],
         // 图片的数组
         pics: [],
         // 商品的详情描述
@@ -104,19 +108,11 @@ export default {
         attrs: [],
       },
       addFormRules: {
-        goods_name: [{ required: true, message: "请输入商品名称", trigger: "blur" }],
-        goods_price: [{ required: true, message: "请输入商品价格", trigger: "blur" }],
-        goods_weight: [{ required: true, message: "请输入商品重量", trigger: "blur" }],
-        goods_number: [{ required: true, message: "请输入商品数量", trigger: "blur" }],
-        goods_cat: [{ required: true, message: "请选择商品分类", trigger: "blur" }],
-      },
-      // 商品分类列表
-      cateList: [],
-      cateProps: {
-        expandTrigger: "hover",
-        label: "cat_name", // 看到的属性
-        value: "cat_id", // 选中的是什么值
-        children: "children", // 指定属性实现父子节点嵌套
+        name: [{ required: true, message: "请输入商品名称", trigger: "blur" }],
+        price: [{ required: true, message: "请输入商品价格", trigger: "blur" }],
+        weight: [{ required: true, message: "请输入商品重量", trigger: "blur" }],
+        number: [{ required: true, message: "请输入商品数量", trigger: "blur" }],
+        categories: [{ required: true, message: "请选择商品分类", trigger: "blur" }],
       },
       // 动态参数列表数据
       manyTableData: [],
@@ -133,27 +129,17 @@ export default {
     };
   },
   created() {
-    this.getCateList();
+    this.getCateSimpleList();
   },
   methods: {
-    // 获取所有商品分类数据
-    async getCateList() {
-      const { data: result } = await this.$http.get("categories");
-      if (result.meta.status !== 200) {
-        return this.$message.error("获取商品分类数据失败！");
-      }
-      this.cateList = result.data;
-      console.log(this.cateList);
-    },
     // 级联选择器选中会触发
     handleChange() {
-      console.log(this.addForm.goods_cat);
-      if (this.addForm.goods_cat.length !== 3) {
-        this.addForm.goods_cat = [];
+      if (this.addForm.categories.length !== 3) {
+        this.addForm.categories = [];
       }
     },
     beforeTabLeave(activeName, oldActiveName) {
-      if (oldActiveName === "0" && this.addForm.goods_cat.length !== 3) {
+      if (oldActiveName === "0" && this.addForm.categories.length !== 3) {
         this.$message.error("请先选择商品分类！");
         return false;
       }
@@ -216,7 +202,7 @@ export default {
         }
         // 执行添加的业务逻辑
         const form = _.cloneDeep(this.addForm);
-        form.goods_cat = form.goods_cat.join(",");
+        form.categories = form.categories.join(",");
         // 处理动态参数
         this.manyTableData.forEach((item) => {
           const newInfo = {
@@ -248,8 +234,8 @@ export default {
   },
   computed: {
     cateId() {
-      if (this.addForm.goods_cat.length === 3) {
-        return this.addForm.goods_cat[2];
+      if (this.addForm.categories.length === 3) {
+        return this.addForm.categories[2];
       }
       return null;
     },
