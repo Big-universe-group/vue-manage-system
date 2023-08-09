@@ -72,15 +72,17 @@
           </el-tab-pane>
 
           <el-tab-pane label="商品图片" name="3">
-            <el-upload
-              :action="uploadURL"
-              :on-preview="handlePreview"
-              :on-remove="handleRemove"
-              list-type="picture"
-              :headers="headerObj"
-              :on-success="handleSuccess">
-              <el-button size="small" type="primary">点击上传</el-button>
-            </el-upload>
+            <div class="upload-image-container">
+              <el-upload
+                :action="uploadURL"
+                :on-preview="handlePreview"
+                :on-remove="handleRemove"
+                list-type="picture"
+                :headers="headerObj"
+                :on-success="handleSuccess">
+                <el-button size="small" type="primary">点击上传</el-button>
+              </el-upload>
+            </div>
             <div class="next-page-button">
               <el-button @click="handleNextOrPrevPage('prev')">上一页</el-button>
               <el-button @click="handleNextOrPrevPage('next')">下一页</el-button>
@@ -88,8 +90,10 @@
           </el-tab-pane>
 
           <el-tab-pane label="商品内容" name="4">
-            <quill-editor v-model="addForm.introduce"></quill-editor>
-            <div class="next-page-button">
+            <div class="goods-editor">
+              <quill-editor v-model="addForm.introduce"></quill-editor>
+            </div>
+            <div class="add-good-button">
               <el-button class="btnAdd" @click="add" type="primary">添加商品</el-button>
             </div>
           </el-tab-pane>
@@ -298,10 +302,46 @@ export default {
   margin-top: 15px;
 }
 
+/* 上传照片按钮 */
+.upload-image-container {
+  display: flex;
+  justify-content: center; /* 水平居中 */
+  height: 100%; /* 根据需要设置高度 */
+}
+
+/* 编辑框内容样式调整 */
+.quill-editor >>> .ql-container {
+  min-height: 380px;
+}
+
+/* 添加商品按钮的样式 */
+.add-good-button {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100%;
+}
+
+/* 为了让el-button始终在底部, 设置el-tabs和el-table-pane最小高度 */
+.el-tabs >>> .el-tabs__content {
+  height: 500px;
+}
+.el-tabs >>> .el-tab-pane {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
 .next-page-button {
   display: flex;
   justify-content: center;
   align-items: center;
   height: 100%; /* 或者您可以设置一个特定的高度 */
+}
+/* 在Flexbox布局中，auto值的边距会吸收任何额外的可用空间, 所以，当我们说 margin-top: auto; 
+   我们实际上是告诉浏览器：“把所有可用的垂直空间都作为这个元素的顶部边距”
+*/
+.next-page-button .el-button {
+  margin-top: auto;
 }
 </style>
