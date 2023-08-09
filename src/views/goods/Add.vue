@@ -10,6 +10,7 @@
     <el-card>
       <!-- 提示区域 -->
       <el-alert title="添加商品信息" type="info" center show-icon :closable="false"></el-alert>
+
       <!-- 步骤条 -->
       <el-steps :space="200" :active="activeIndex - 0" finish-status="success" align-center>
         <el-step title="基本信息"></el-step>
@@ -19,6 +20,7 @@
         <el-step title="商品内容"></el-step>
         <el-step title="完成"></el-step>
       </el-steps>
+
       <!-- tab栏区域 -->
       <el-form :model="addForm" :rules="addFormRules" ref="addFormRef" label-width="100px" label-position="top">
         <el-tabs :tab-position="'left'" v-model="activeIndex" :before-leave="beforeTabLeave" @tab-click="tabClicked">
@@ -42,23 +44,34 @@
                 :props="casteProps"
                 @change="handleChange"></el-cascader>
             </el-form-item>
+            <div class="next-page-button">
+              <el-button @click="handleNextOrPrevPage('next')">下一页</el-button>
+            </div>
           </el-tab-pane>
+
           <el-tab-pane label="商品参数" name="1">
-            <!-- 渲染表单item项 -->
-            <el-form-item :label="item.attr_name" v-for="item in manyTableData" :key="item.attr_id">
-              <!-- 复选框组 -->
-              <el-checkbox-group v-model="item.attr_vals">
-                <el-checkbox v-for="(cb, index) in item.attr_vals" :key="index" :label="cb" border></el-checkbox>
+            <el-form-item :label="item.attr_name" v-for="item in manyTableData" :key="item.id">
+              <el-checkbox-group v-model="item.values">
+                <el-checkbox v-for="(cb, index) in item.values" :key="index" :label="cb" border></el-checkbox>
               </el-checkbox-group>
             </el-form-item>
+            <div class="next-page-button">
+              <el-button @click="handleNextOrPrevPage('prev')">上一页</el-button>
+              <el-button @click="handleNextOrPrevPage('next')">下一页</el-button>
+            </div>
           </el-tab-pane>
+
           <el-tab-pane label="商品属性" name="2">
-            <el-form-item :label="item.attr_name" v-for="item in onlyTableData" :key="item.attr_id">
-              <el-input v-model="item.attr_vals"></el-input>
+            <el-form-item :label="item.attr_name" v-for="item in onlyTableData" :key="item.id">
+              <el-input v-model="item.values"></el-input>
             </el-form-item>
+            <div class="next-page-button">
+              <el-button @click="handleNextOrPrevPage('prev')">上一页</el-button>
+              <el-button @click="handleNextOrPrevPage('next')">下一页</el-button>
+            </div>
           </el-tab-pane>
+
           <el-tab-pane label="商品图片" name="3">
-            <!-- 图片上传模块 action表示上传的API地址 -->
             <el-upload
               :action="uploadURL"
               :on-preview="handlePreview"
@@ -68,12 +81,17 @@
               :on-success="handleSuccess">
               <el-button size="small" type="primary">点击上传</el-button>
             </el-upload>
+            <div class="next-page-button">
+              <el-button @click="handleNextOrPrevPage('prev')">上一页</el-button>
+              <el-button @click="handleNextOrPrevPage('next')">下一页</el-button>
+            </div>
           </el-tab-pane>
+
           <el-tab-pane label="商品内容" name="4">
-            <!-- 富文本编辑组件 -->
-            <quill-editor v-model="addForm.goods_introduce"></quill-editor>
-            <!-- 添加商品按钮 -->
-            <el-button class="btnAdd" @click="add" type="primary">添加商品</el-button>
+            <quill-editor v-model="addForm.introduce"></quill-editor>
+            <div class="next-page-button">
+              <el-button class="btnAdd" @click="add" type="primary">添加商品</el-button>
+            </div>
           </el-tab-pane>
         </el-tabs>
       </el-form>
@@ -104,7 +122,7 @@ export default {
         // 图片的数组
         pics: [],
         // 商品的详情描述
-        goods_introduce: "",
+        introduce: "",
         attrs: [],
       },
       addFormRules: {
@@ -146,27 +164,25 @@ export default {
     },
     async tabClicked() {
       if (this.activeIndex === "1") {
-        const { data: result } = await this.$http.get(`categories/${this.cateId}/attributes`, {
-          params: { sel: "many" },
+        const { data: result } = await this.$http.get(`goods/categories/${this.cateId}/attributes`, {
+          params: { select: "many" },
         });
-        if (result.meta.status !== 200) {
-          return this.$message.error("获取状态参数列表失败！");
+        if (!this.checkRequestResult(result, "获取状态参数列表失败！")) {
+          return;
         }
-        console.log(result.data);
         result.data.forEach((item) => {
-          item.attr_vals = item.attr_vals.length === 0 ? [] : item.attr_vals.split(" ");
+          item.values = item.values.length === 0 ? [] : item.values.split(" ");
         });
         this.manyTableData = result.data;
       } else if (this.activeIndex === "2") {
-        const { data: result } = await this.$http.get(`categories/${this.cateId}/attributes`, {
-          params: { sel: "only" },
+        const { data: result } = await this.$http.get(`goods/categories/${this.cateId}/attributes`, {
+          params: { select: "only" },
         });
-        if (result.meta.status !== 200) {
-          return this.$message.error("获取状态参数列表失败！");
+        if (!this.checkRequestResult(result, "获取状态参数列表失败！")) {
+          return;
         }
-        console.log(result.data);
         result.data.forEach((item) => {
-          item.attr_vals = item.attr_vals.length === 0 ? [] : item.attr_vals;
+          item.values = item.values.length === 0 ? [] : item.values;
         });
         this.onlyTableData = result.data;
       }
@@ -177,6 +193,7 @@ export default {
       this.previewPath = file.response.data.url;
       this.previewVisible = true;
     },
+
     // 处理移除图片的操作
     handleRemove(file) {
       console.log(file);
@@ -188,13 +205,17 @@ export default {
       this.addForm.pics.splice(i, 1);
       console.log(this.addForm);
     },
+
+    /*
+     * 功能: 拼接图片信息对象并将其Push到pics数组中
+     */
     handleSuccess(response) {
-      // console.log(responce)
-      // 1. 拼接得到一个图片信息对象
-      const picInfo = { pic: response.data.tmp_path };
-      // 2. 将图片信息对象，push到pics数组中
-      this.addForm.pics.push(picInfo);
+      this.addForm.pics.push({ pic: response.data.tmp_path });
     },
+
+    /*
+     * 功能: 添加商品
+     */
     add() {
       this.$refs.addFormRef.validate(async (valid) => {
         if (!valid) {
@@ -202,20 +223,19 @@ export default {
         }
         // 执行添加的业务逻辑
         const form = _.cloneDeep(this.addForm);
-        form.categories = form.categories.join(",");
         // 处理动态参数
         this.manyTableData.forEach((item) => {
           const newInfo = {
-            attr_id: item.attr_id,
-            attr_value: item.attr_vals.join(" "),
+            id: item.id,
+            values: item.values.join(" "),
           };
           this.addForm.attrs.push(newInfo);
         });
         // 处理静态属性
         this.onlyTableData.forEach((item) => {
           const newInfo = {
-            attr_id: item.attr_id,
-            attr_value: item.attr_vals,
+            id: item.id,
+            values: item.values,
           };
           this.addForm.attrs.push(newInfo);
         });
@@ -224,12 +244,34 @@ export default {
         // 发起请求添加商品
         // 商品的名称必须是唯一的
         const { data: result } = await this.$http.post("goods", form);
-        if (result.meta.status !== 201) {
-          return this.$message.error("添加商品失败");
+        if (!this.checkRequestResult(result, "添加商品失败")) {
+          return;
         }
         this.$message.success("添加商品成功");
         this.$router.push("/goods");
       });
+    },
+    /*
+     * 上/下一页事件处理函数
+     */
+    handleNextOrPrevPage(action) {
+      var isEnable = false;
+      if (action == "prev") {
+        if (this.activeIndex > 0) {
+          this.activeIndex = (parseInt(this.activeIndex) - 1).toString();
+          isEnable = true;
+        }
+      } else {
+        if (this.activeIndex < 4) {
+          this.activeIndex = (parseInt(this.activeIndex) + 1).toString();
+          isEnable = true;
+        }
+      }
+
+      // 表示此时tab也发生了变动
+      if (isEnable) {
+        this.tabClicked();
+      }
     },
   },
   computed: {
@@ -254,5 +296,12 @@ export default {
 
 .btnAdd {
   margin-top: 15px;
+}
+
+.next-page-button {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100%; /* 或者您可以设置一个特定的高度 */
 }
 </style>
