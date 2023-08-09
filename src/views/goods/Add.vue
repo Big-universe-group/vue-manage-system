@@ -108,6 +108,7 @@
 
 <script>
 import _ from "lodash";
+import axiosapi from "@/utils/request";
 import requestMixin from "@/mixins/requestMixin";
 import categoryMixin from "@/mixins/categoryMixin";
 
@@ -141,7 +142,7 @@ export default {
       // 静态属性列表数据
       onlyTableData: [],
       // 上传图片的URL地址
-      uploadURL: "http://127.0.0.1:8888/api/private/v1/upload",
+      uploadURL: axiosapi.uploadURL + "/api/v1/goods/upload",
       // 图片上传组件的header请求头对象
       headerObj: {
         Authorization: window.sessionStorage.getItem("token"),
@@ -193,28 +194,26 @@ export default {
     },
     // 处理图片预览效果
     handlePreview(file) {
-      console.log(file);
       this.previewPath = file.response.data.url;
       this.previewVisible = true;
     },
 
-    // 处理移除图片的操作
+    /*
+     * 处理移除图片的操作, 其操作:
+     *  a. 获取将要删除的照片路径
+     *  b. 在图片列表中匹配并找到相应的元素并进行删除
+     */
     handleRemove(file) {
-      console.log(file);
-      // 1. 获取将要删除的图片的临时路径
-      const filePath = file.response.data.tmp_path;
-      // 2. 从pics数组中，找到这个图片对应的索引值
-      const i = this.addForm.pics.findIndex((x) => x.pic === filePath);
-      // 3. 调用数组的splice方法，把图片信息对象，从pics数组中移除
+      const filePath = file.response.data.pics_big;
+      const i = this.addForm.pics.findIndex((x) => x.pics_big === filePath);
       this.addForm.pics.splice(i, 1);
-      console.log(this.addForm);
     },
 
     /*
      * 功能: 拼接图片信息对象并将其Push到pics数组中
      */
     handleSuccess(response) {
-      this.addForm.pics.push({ pic: response.data.tmp_path });
+      this.addForm.pics.push(response.data);
     },
 
     /*
@@ -244,7 +243,6 @@ export default {
           this.addForm.attrs.push(newInfo);
         });
         form.attrs = this.addForm.attrs;
-        console.log(form);
         // 发起请求添加商品
         // 商品的名称必须是唯一的
         const { data: result } = await this.$http.post("goods", form);
@@ -306,6 +304,7 @@ export default {
 .upload-image-container {
   display: flex;
   justify-content: center; /* 水平居中 */
+  align-items: center;
   height: 100%; /* 根据需要设置高度 */
 }
 
