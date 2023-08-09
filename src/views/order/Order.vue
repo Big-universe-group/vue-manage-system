@@ -17,8 +17,8 @@
       <!-- 订单列表数据 -->
       <el-table :data="orderList" border stripe>
         <el-table-column type="index"></el-table-column>
-        <el-table-column label="订单编号" prop="order_number"></el-table-column>
-        <el-table-column label="订单价格" prop="order_price"></el-table-column>
+        <el-table-column label="订单编号" prop="id"></el-table-column>
+        <el-table-column label="订单价格" prop="price"></el-table-column>
         <el-table-column label="是否付款" prop="pay_status">
           <template slot-scope="scope">
             <el-tag type="success" v-if="scope.pay_status === '1'">已付款</el-tag>
@@ -26,9 +26,9 @@
           </template>
         </el-table-column>
         <el-table-column label="是否发货" prop="is_send"></el-table-column>
-        <el-table-column label="下单时间" prop="create_time">
+        <el-table-column label="下单时间" prop="create_at">
           <template slot-scope="scope">
-            {{ scope.row.create_time | dateFormat }}
+            {{ scope.row.create_at | dateFormat }}
           </template>
         </el-table-column>
         <el-table-column label="操作">
@@ -42,8 +42,8 @@
       <el-pagination
         @size-change="handleSizeChange"
         @current-change="handleCurrentChange"
-        :current-page="queryInfo.pagenum"
-        :page-sizes="[5, 10, 15, 20]"
+        :current-page="queryInfo.page"
+        :page-sizes="[10, 20, 50, 100]"
         :page-size="queryInfo.pagesize"
         layout="total, sizes, prev, pager, next, jumper"
         :total="total"
@@ -82,13 +82,17 @@
 
 <script>
 import provinceInfo from "@/data/province";
+import SimpleApi from "@/api/simpleApi";
+import requestMixin from "@/mixins/requestMixin";
 import db from "./db.js";
+
 export default {
+  mixins: [requestMixin],
   data() {
     return {
       queryInfo: {
         query: "",
-        pagenum: 1,
+        page: 1,
         pagesize: 10,
       },
       total: 0,
@@ -113,22 +117,21 @@ export default {
   },
   methods: {
     async getOrderList() {
-      const { data: result } = await this.$http.get("orders", {
+      const { data: result } = await this.$http.get("order", {
         params: this.queryInfo,
       });
-      if (result.meta.status !== 200) {
-        return this.$message.error("获取订单列表失败");
+      if (!this.checkRequestResult(result, "获取订单列表失败")) {
+        return;
       }
-      console.log(result);
-      this.total = result.data.total;
-      this.orderList = result.data.goods;
+      this.total = result.pager.total;
+      this.orderList = result.data;
     },
     handleSizeChange(newSize) {
       this.queryInfo.pagesize = newSize;
       this.getOrderList();
     },
     handleCurrentChange(newPage) {
-      this.queryInfo.pagenum = newPage;
+      this.queryInfo.page = newPage;
       this.getOrderList();
     },
     // 展示修改地址的对话框
@@ -139,10 +142,6 @@ export default {
       this.$refs.addressFormRef.resetFields();
     },
     showProgressBox() {
-      // const { data: result } = await this.$http.get('http://localhost:3000')
-      // if (result.meta.status !== 200) {
-      //   return this.$message.error('获取物流进度失败')
-      // }
       this.progressInfo = this.db;
       this.progressVisible = true;
       console.log(this.progressInfo);
