@@ -114,6 +114,7 @@ export default {
           ],
         },
         { icon: "el-icon-rank", index: "task", title: "工作流程" },
+        { icon: "el-icon-rank", index: "systeminfo", title: "系统监控" },
         { icon: "el-icon-lx-redpacket_fill", index: "/donate", title: "支持作者" },
       ],
     };
